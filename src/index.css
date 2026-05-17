@@ -1,0 +1,126 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body, #root {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* 全局滚动条 — 深色极简风 */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-neutral-600 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-neutral-500;
+  }
+}
+
+@layer utilities {
+  .text-muted {
+    @apply text-neutral-500;
+  }
+  .border-subtle {
+    @apply border-neutral-800;
+  }
+  .panel {
+    @apply bg-canvas-900 border border-neutral-800;
+  }
+}
+
+/* ── React Flow 深色主题覆盖 ──────────────────────────── */
+.react-flow {
+  background: #0a0a0b;
+}
+.react-flow__node {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+/* 连线颜色 */
+.react-flow__edge-path {
+  stroke: #7c5af0;
+  stroke-width: 1.5px;
+}
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #a085f5;
+}
+/* 选择框 */
+.react-flow__selection {
+  background: rgba(124, 90, 240, 0.05);
+  border: 1px solid #7c5af0;
+}
+/* Controls 按钮 */
+.react-flow__controls {
+  background: #111113;
+  border: 1px solid #2a2a30;
+  border-radius: 8px;
+  box-shadow: none;
+  overflow: hidden;
+}
+.react-flow__controls-button {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #1f1f26;
+  color: #6b7280;
+  fill: #6b7280;
+  padding: 6px;
+}
+.react-flow__controls-button:hover {
+  background: #1a1a1f;
+  fill: #a3a3a3;
+}
+.react-flow__controls-button:last-child {
+  border-bottom: none;
+}
+/* 连线端点 */
+.react-flow__handle {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #3f3f4a;
+  border: 1.5px solid #5a5a6a;
+}
+.react-flow__handle:hover {
+  background: #7c5af0;
+  border-color: #7c5af0;
+}
+/* 节点选中高亮阴影 */
+.react-flow__node.selected .react-flow__node-generation {
+  box-shadow: 0 0 0 2px rgba(124, 90, 240, 0.5);
+}
+
+/* ── Radix Accordion 动画 ─────────────────────────────── */
+@keyframes accordion-down {
+  from { height: 0; opacity: 0; }
+  to { height: var(--radix-accordion-content-height); opacity: 1; }
+}
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); opacity: 1; }
+  to { height: 0; opacity: 0; }
+}
+.data-\[state\=open\]\:animate-accordion-down[data-state=open] {
+  animation: accordion-down 0.18s ease-out;
+}
+.data-\[state\=closed\]\:animate-accordion-up[data-state=closed] {
+  animation: accordion-up 0.15s ease-in;
+}
