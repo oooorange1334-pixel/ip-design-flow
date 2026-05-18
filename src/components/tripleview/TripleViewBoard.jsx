@@ -39,16 +39,16 @@ export default function TripleViewBoard({ images = {}, isGenerating = false, cla
     <div className={cn('flex flex-col gap-1', className)}>
       {/* 工具栏 */}
       <div className="flex items-center justify-between px-1 shrink-0">
-        <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest">
+        <span className="text-[14px] font-mono text-neutral-600 uppercase tracking-widest">
           Triple View
         </span>
         <button
           onClick={() => setSyncEnabled(!syncEnabled)}
           className={cn(
-            'flex items-center gap-1 text-[10px] px-2 py-0.5 rounded border transition-colors',
+            'flex items-center gap-1 text-[14px] px-2 py-0.5 rounded border transition-colors',
             syncEnabled
               ? 'border-generate/40 text-generate bg-generate/5'
-              : 'border-neutral-700 text-neutral-600 hover:border-neutral-600'
+              : 'border-line text-neutral-600 hover:border-neutral-600'
           )}
           title={syncEnabled ? '关闭同步缩放' : '开启同步缩放'}
         >
@@ -72,7 +72,7 @@ export default function TripleViewBoard({ images = {}, isGenerating = false, cla
       </div>
 
       {/* 操作提示 */}
-      <p className="text-[9px] text-neutral-700 text-center shrink-0">
+      <p className="text-[15px] text-neutral-700 text-center shrink-0">
         滚轮缩放 · 拖拽平移 · 双击重置{syncEnabled ? ' · 同步模式' : ' · 独立模式'}
       </p>
     </div>

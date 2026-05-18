@@ -1,10 +1,10 @@
 import { Sparkles } from 'lucide-react'
 import { cn } from '../../../lib/utils'
-import useIPStore from '../../../store/useIPStore'
+import useProject from '../../../store/useProject'
 import HybridInputZone from '../../input/HybridInputZone'
 
 export default function Step01Inspiration() {
-  const { rfNodes, extractAssets, workflowPhase } = useIPStore()
+  const { rfNodes, extractAssets, workflowPhase } = useProject()
 
   // 画布上已选中的知识图谱节点（任意类型均可提炼）
   const selectedKGIds = rfNodes
@@ -21,12 +21,12 @@ export default function Step01Inspiration() {
 
       {/* 框选提炼按钮 */}
       {totalKGNodes > 0 && (
-        <div className="border-t border-neutral-800 pt-3">
+        <div className="border-t border-line pt-3">
           <button
             onClick={() => extractAssets(selectedKGIds)}
             disabled={!canExtract}
             className={cn(
-              'w-full flex items-center justify-center gap-2 py-2 rounded-md text-[11px] font-medium transition-all',
+              'w-full flex items-center justify-center gap-2 py-2 rounded-md text-[15px] font-medium transition-all',
               canExtract
                 ? 'bg-violet-600 hover:bg-violet-500 text-white shadow-md shadow-violet-900/30 active:scale-[0.98]'
                 : 'bg-neutral-800 text-neutral-600 cursor-not-allowed'

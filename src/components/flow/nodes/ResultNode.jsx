@@ -19,7 +19,7 @@ export default memo(function ResultNode({ data, selected }) {
         'rounded-xl border bg-canvas-800 shadow-2xl overflow-hidden transition-all duration-100',
         selected
           ? 'border-accent ring-1 ring-accent/40 shadow-accent/20'
-          : 'border-neutral-700/60 hover:border-neutral-600'
+          : 'border-line/60 hover:border-neutral-600'
       )}
       style={{ width: 280 }}
     >
@@ -27,11 +27,11 @@ export default memo(function ResultNode({ data, selected }) {
         className="!w-2.5 !h-2.5 !bg-neutral-600 !border-neutral-500 hover:!bg-accent" />
 
       {/* 标题 */}
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-neutral-700/60 bg-canvas-900">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-line/60 bg-canvas-900">
         <Sparkles size={11} className="text-accent" />
-        <span className="text-[11px] font-semibold text-neutral-100">生成结果</span>
+        <span className="text-[15px] font-semibold text-neutral-100">生成结果</span>
         {data.isGenerating && (
-          <div className="ml-auto flex items-center gap-1 text-[10px] text-generate">
+          <div className="ml-auto flex items-center gap-1 text-[14px] text-generate">
             <Loader2 size={10} className="animate-spin" />
             <span>渲染中</span>
           </div>
@@ -55,7 +55,7 @@ export default memo(function ResultNode({ data, selected }) {
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-[9px] text-neutral-700">—</span>
+                <span className="text-[15px] text-neutral-700">—</span>
               </div>
             )}
           </div>
@@ -63,19 +63,19 @@ export default memo(function ResultNode({ data, selected }) {
       </div>
 
       {/* Prompt 折叠面板 */}
-      <div className="border-t border-neutral-700/60">
+      <div className="border-t border-line/60">
         <button
           onClick={() => setPromptOpen(!promptOpen)}
           className="w-full flex items-center justify-between px-3 py-1.5 hover:bg-neutral-800/40 transition-colors"
         >
-          <span className="text-[10px] text-neutral-500 font-mono">Prompt</span>
+          <span className="text-[14px] text-neutral-500 font-mono">Prompt</span>
           {promptOpen ? <ChevronUp size={10} className="text-neutral-600" /> : <ChevronDown size={10} className="text-neutral-600" />}
         </button>
 
         {promptOpen && (
           <div className="px-3 pb-3">
-            <div className="relative bg-canvas-950 rounded p-2 border border-neutral-800">
-              <p className="text-[9px] font-mono text-neutral-500 leading-relaxed break-all pr-5">
+            <div className="relative bg-canvas-950 rounded p-2 border border-line">
+              <p className="text-[15px] font-mono text-neutral-500 leading-relaxed break-all pr-5">
                 {data.prompt ?? '—'}
               </p>
               <button
@@ -86,7 +86,7 @@ export default memo(function ResultNode({ data, selected }) {
                 <Copy size={9} />
               </button>
               {copied && (
-                <span className="absolute top-1 right-6 text-[9px] text-generate">已复制</span>
+                <span className="absolute top-1 right-6 text-[15px] text-generate">已复制</span>
               )}
             </div>
           </div>

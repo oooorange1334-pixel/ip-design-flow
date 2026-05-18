@@ -1,24 +1,21 @@
 import { useCallback, useEffect, useRef } from 'react'
 import ReactFlow, {
-  Background, BackgroundVariant, Controls, MiniMap, addEdge, useReactFlow,
+  Background, BackgroundVariant, Controls, MiniMap, useReactFlow,
 } from 'reactflow'
 import { useDroppable } from '@dnd-kit/core'
 import 'reactflow/dist/style.css'
 
 import useIPStore from '../../store/useIPStore'
-import { applyDagreLayout } from '../../lib/dagreLayout'
+import { applyForestLayout } from '../../lib/dagreLayout'
 
-// 原有节点
 import ReferenceNode  from './nodes/ReferenceNode'
 import ParameterNode  from './nodes/ParameterNode'
 import ResultNode     from './nodes/ResultNode'
 import GenerationNode from './nodes/GenerationNode'
 import TripleViewNode from './nodes/TripleViewNode'
-// 知识图谱节点
-import KGRootNode   from './nodes/kg/KGRootNode'
-import KGTextNode   from './nodes/kg/KGTextNode'
-import KGVisualNode from './nodes/kg/KGVisualNode'
-
+import KGRootNode     from './nodes/kg/KGRootNode'
+import KGTextNode     from './nodes/kg/KGTextNode'
+import KGVisualNode   from './nodes/kg/KGVisualNode'
 import SelectionToolbar from './SelectionToolbar'
 
 const nodeTypes = {
@@ -33,36 +30,45 @@ const nodeTypes = {
 }
 
 export default function IPFlowCanvas() {
-  const { rfNodes, rfEdges, onRFNodesChange, onRFEdgesChange, setRFEdges, setRFNodes } = useIPStore()
+  const {
+    currentProject,
+    onRFNodesChange, onRFEdgesChange, onRFConnect,
+    setRFNodes, setRFEdges,
+    setSelectedNode,
+  } = useIPStore()
+
+  const proj = currentProject()
+  const rfNodes = proj?.rfNodes ?? []
+  const rfEdges = proj?.rfEdges ?? []
+
   const { fitView } = useReactFlow()
   const prevKGCount = useRef(0)
 
-  // 当知识图谱节点数量变化时，触发 dagre 自动布局并 fitView
+  // KG 节点数量变化 → forest layout → fitView
   useEffect(() => {
     const kgNodes = rfNodes.filter(n => n.type?.startsWith('kg'))
     const kgEdges = rfEdges.filter(e => e.id.startsWith('e-root'))
 
     if (kgNodes.length > 0 && kgNodes.length !== prevKGCount.current) {
       prevKGCount.current = kgNodes.length
-
-      const laid = applyDagreLayout(kgNodes, kgEdges, 'LR')
       const nonKG = rfNodes.filter(n => !n.type?.startsWith('kg'))
+      const laid  = applyForestLayout(kgNodes, kgEdges, 'LR', 1100)
       setRFNodes([...nonKG, ...laid])
-
-      // 延迟一帧再 fitView，确保节点已渲染
-      setTimeout(() => fitView({ padding: 0.3, duration: 600 }), 50)
+      setTimeout(() => fitView({ padding: 0.2, duration: 700 }), 60)
     }
   }, [rfNodes, rfEdges, setRFNodes, fitView])
 
   const { setNodeRef: setDropRef, isOver } = useDroppable({ id: 'canvas-drop' })
 
-  const onConnect = useCallback(
-    (params) => setRFEdges(addEdge({
-      ...params, animated: true,
-      style: { stroke: '#7c5af0', strokeWidth: 1.5 },
-    }, rfEdges)),
-    [rfEdges, setRFEdges]
-  )
+  // 节点点击 → 更新 selectedNode（驱动右侧 Context Drawer）
+  const onNodeClick = useCallback((_, node) => {
+    setSelectedNode(node)
+  }, [setSelectedNode])
+
+  // 点击画布空白 → 清除选中
+  const onPaneClick = useCallback(() => {
+    setSelectedNode(null)
+  }, [setSelectedNode])
 
   const selectedIds = rfNodes.filter(n => n.selected).map(n => n.id)
 
@@ -73,12 +79,14 @@ export default function IPFlowCanvas() {
         edges={rfEdges}
         onNodesChange={onRFNodesChange}
         onEdgesChange={onRFEdgesChange}
-        onConnect={onConnect}
+        onConnect={onRFConnect}
+        onNodeClick={onNodeClick}
+        onPaneClick={onPaneClick}
         nodeTypes={nodeTypes}
         fitView
-        fitViewOptions={{ padding: 0.3 }}
+        fitViewOptions={{ padding: 0.25 }}
         deleteKeyCode="Delete"
-        minZoom={0.1}
+        minZoom={0.08}
         maxZoom={2.5}
         selectionOnDrag
         panOnDrag={[1, 2]}
@@ -98,7 +106,7 @@ export default function IPFlowCanvas() {
             return '#3f3f4a'
           }}
           maskColor="rgba(10,10,11,0.8)"
-          style={{ background: '#111113', border: '1px solid #2a2a30', borderRadius: '6px' }}
+          style={{ background: '#161618', border: '1px solid #3a3a42', borderRadius: '6px' }}
         />
         {selectedIds.length > 0 && <SelectionToolbar selectedIds={selectedIds} />}
         {rfNodes.length === 0 && <EmptyHint />}
@@ -115,8 +123,8 @@ function EmptyHint() {
   return (
     <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
       <div className="text-center space-y-1.5">
-        <p className="text-[11px] font-mono text-neutral-800 tracking-widest">输入关键词或上传文件，AI 将解析知识图谱</p>
-        <p className="text-[10px] text-neutral-800">支持 PDF · PPT · Word · 图片</p>
+        <p className="text-[15px] font-mono text-neutral-800 tracking-widest">输入关键词或上传文件，AI 将解析知识图谱</p>
+        <p className="text-[14px] text-neutral-800">支持 PDF · PPT · Word · 图片 · 多文件同时解析</p>
       </div>
     </div>
   )

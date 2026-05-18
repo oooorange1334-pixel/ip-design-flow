@@ -58,9 +58,9 @@ export default function Step03TripleView() {
     <div className="space-y-4 py-1">
       {/* 基准图选择 */}
       <div>
-        <p className="text-[10px] text-neutral-500 mb-1.5">基准图来源</p>
+        <p className="text-[14px] text-neutral-500 mb-1.5">基准图来源</p>
         {refOptions.length === 0 ? (
-          <p className="text-[10px] text-neutral-700 italic">
+          <p className="text-[14px] text-neutral-700 italic">
             请先在「灵感调研」步骤生成图像
           </p>
         ) : (
@@ -68,7 +68,7 @@ export default function Step03TripleView() {
             <select
               value={selectedRef}
               onChange={(e) => setSelectedRef(e.target.value)}
-              className="w-full appearance-none bg-canvas-800 border border-neutral-700 rounded px-2 py-1.5 text-[11px] text-neutral-200 focus:outline-none focus:border-accent transition-colors pr-6"
+              className="w-full appearance-none bg-canvas-800 border border-line rounded px-2 py-1.5 text-[15px] text-neutral-200 focus:outline-none focus:border-accent transition-colors pr-6"
             >
               <option value="">自动选最新</option>
               {refOptions.map((n) => (
@@ -83,8 +83,8 @@ export default function Step03TripleView() {
       </div>
 
       {/* CMF 材质选择器 */}
-      <div className="border-t border-neutral-800 pt-3">
-        <p className="text-[10px] text-neutral-500 mb-2 flex items-center gap-1.5">
+      <div className="border-t border-line pt-3">
+        <p className="text-[14px] text-neutral-500 mb-2 flex items-center gap-1.5">
           <span className="w-1 h-1 rounded-full bg-cyan-500 inline-block" />
           CMF 规范
         </p>
@@ -107,7 +107,7 @@ export default function Step03TripleView() {
       </button>
 
       {generatingTriple && (
-        <p className="text-[10px] text-neutral-600 text-center">
+        <p className="text-[14px] text-neutral-600 text-center">
           三个视角并行渲染中，请稍候...
         </p>
       )}

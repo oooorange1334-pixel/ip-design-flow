@@ -19,14 +19,14 @@ export default memo(function KGRootNode({ data, selected }) {
         <div className="w-9 h-9 rounded-xl bg-accent/20 border border-accent/40 flex items-center justify-center">
           <Sparkles size={16} className="text-accent" />
         </div>
-        <p className="text-[13px] font-bold text-neutral-100 text-center leading-tight">
+        <p className="text-[15px] font-bold text-neutral-100 text-center leading-tight">
           {data.label}
         </p>
         {data.query && (
-          <p className="text-[10px] text-neutral-500 text-center">{data.query}</p>
+          <p className="text-[14px] text-neutral-500 text-center">{data.query}</p>
         )}
         {data.fileCount > 0 && (
-          <div className="flex items-center gap-1 text-[9px] text-neutral-600">
+          <div className="flex items-center gap-1 text-[15px] text-neutral-600">
             <FileText size={9} />
             <span>{data.fileCount} 个文件</span>
           </div>

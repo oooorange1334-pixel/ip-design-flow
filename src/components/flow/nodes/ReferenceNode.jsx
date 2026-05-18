@@ -12,7 +12,7 @@ export default memo(function ReferenceNode({ data, selected }) {
         'rounded-lg border overflow-hidden bg-canvas-800 shadow-lg transition-all duration-100',
         selected
           ? 'border-violet-500/70 ring-1 ring-violet-500/30 shadow-violet-900/30'
-          : 'border-neutral-700/50 hover:border-neutral-600'
+          : 'border-line/50 hover:border-neutral-600'
       )}
       style={{ width: 180 }}
     >
@@ -37,7 +37,7 @@ export default memo(function ReferenceNode({ data, selected }) {
 
       {/* 底部标签 */}
       <div className="px-2 py-1 bg-canvas-900/80">
-        <p className="text-[9px] text-neutral-500 truncate">{data.label}</p>
+        <p className="text-[15px] text-neutral-500 truncate">{data.label}</p>
       </div>
 
       <Handle type="source" position={Position.Bottom}

@@ -3,10 +3,10 @@ import { Handle, Position } from 'reactflow'
 import { Columns3, Pin } from 'lucide-react'
 import { cn } from '../../../lib/utils'
 import TripleViewBoard from '../../tripleview/TripleViewBoard'
-import useIPStore from '../../../store/useIPStore'
+import useProject from '../../../store/useProject'
 
 export default memo(function TripleViewNode({ id, data, selected }) {
-  const { lockElement, unlockElement, lockedElements } = useIPStore()
+  const { lockElement, unlockElement, lockedElements } = useProject()
 
   const isPinned = lockedElements.some((e) => e.id === `tripleview-${id}`)
 
@@ -28,7 +28,7 @@ export default memo(function TripleViewNode({ id, data, selected }) {
         'rounded-xl border bg-canvas-800 shadow-2xl overflow-hidden',
         selected
           ? 'border-cyan-500/60 ring-1 ring-cyan-500/20'
-          : 'border-neutral-700/60 hover:border-neutral-600',
+          : 'border-line/60 hover:border-neutral-600',
       )}
       style={{ width: 640 }}
     >
@@ -39,17 +39,17 @@ export default memo(function TripleViewNode({ id, data, selected }) {
       />
 
       {/* 节点标题栏 */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-neutral-700/60 bg-canvas-900">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-line/60 bg-canvas-900">
         <div className="flex items-center gap-2">
           <Columns3 size={12} className="text-cyan-400" />
-          <span className="text-[11px] font-medium text-neutral-200">三视图规范</span>
+          <span className="text-[15px] font-medium text-neutral-200">三视图规范</span>
           {data.referenceLabel && (
-            <span className="text-[10px] text-neutral-600">← {data.referenceLabel}</span>
+            <span className="text-[14px] text-neutral-600">← {data.referenceLabel}</span>
           )}
         </div>
         <div className="flex items-center gap-2">
           {data.seed && (
-            <span className="text-[9px] font-mono text-neutral-600">#{data.seed}</span>
+            <span className="text-[15px] font-mono text-neutral-600">#{data.seed}</span>
           )}
           <button
             onClick={handlePin}

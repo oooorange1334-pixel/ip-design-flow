@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { cn } from '../../lib/utils'
-import useIPStore from '../../store/useIPStore'
+import useProject from '../../store/useProject'
 import { CheckCircle2 } from 'lucide-react'
 
 import Step01Inspiration  from './steps/Step01Inspiration'
@@ -26,28 +26,28 @@ const IP_GENERATE_INDEX = 2
 
 // ── IP 设定面板（仅 IP 生成步骤显示） ─────────────────────
 function IPContextPanel() {
-  const { ipContext, updateIPContext } = useIPStore()
+  const { ipContext, updateIPContext } = useProject()
   return (
-    <div className="w-64 shrink-0 border-r border-neutral-800 flex flex-col h-full overflow-y-auto">
+    <div className="w-64 shrink-0 border-r border-line flex flex-col h-full overflow-y-auto">
       <div className="px-4 pt-3 pb-1">
-        <p className="text-[10px] font-mono text-neutral-600 uppercase tracking-wider">IP 全局设定</p>
+        <p className="text-[14px] font-mono text-neutral-600 uppercase tracking-wider">IP 全局设定</p>
       </div>
       <div className="px-3 pb-3 space-y-2.5 flex-1">
         <input
-          className="w-full bg-canvas-800 border border-neutral-800 rounded px-2.5 py-1.5 text-[11px] text-neutral-200 placeholder-neutral-700 focus:outline-none focus:border-accent transition-colors"
+          className="w-full bg-canvas-800 border border-line rounded px-2.5 py-1.5 text-[15px] text-neutral-200 placeholder-neutral-700 focus:outline-none focus:border-accent transition-colors"
           placeholder="性格定位，如：高科技机器人"
           value={ipContext.personality}
           onChange={e => updateIPContext({ personality: e.target.value })}
         />
         <div className="flex gap-1.5">
           <input
-            className="flex-1 bg-canvas-800 border border-neutral-800 rounded px-2 py-1.5 text-[11px] text-neutral-200 placeholder-neutral-700 focus:outline-none focus:border-accent transition-colors"
+            className="flex-1 bg-canvas-800 border border-line rounded px-2 py-1.5 text-[15px] text-neutral-200 placeholder-neutral-700 focus:outline-none focus:border-accent transition-colors"
             placeholder="主材质"
             value={ipContext.material}
             onChange={e => updateIPContext({ material: e.target.value })}
           />
           <input
-            className="flex-1 bg-canvas-800 border border-neutral-800 rounded px-2 py-1.5 text-[11px] text-neutral-200 placeholder-neutral-700 focus:outline-none focus:border-accent transition-colors"
+            className="flex-1 bg-canvas-800 border border-line rounded px-2 py-1.5 text-[15px] text-neutral-200 placeholder-neutral-700 focus:outline-none focus:border-accent transition-colors"
             placeholder="点缀件"
             value={ipContext.accent}
             onChange={e => updateIPContext({ accent: e.target.value })}
@@ -64,21 +64,21 @@ function IPContextPanel() {
 function SliderRow({ label, value, onChange, color = 'accent' }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[10px] text-neutral-600 w-10 shrink-0">{label}</span>
+      <span className="text-[14px] text-neutral-600 w-10 shrink-0">{label}</span>
       <input
         type="range" min="0" max="1" step="0.01"
         value={value}
         onChange={e => onChange(parseFloat(e.target.value))}
         className={cn('flex-1 h-0.5 cursor-pointer', color === 'cyan' ? 'accent-cyan-500' : 'accent-violet-500')}
       />
-      <span className="text-[10px] font-mono text-neutral-500 w-8 text-right">{value.toFixed(2)}</span>
+      <span className="text-[14px] font-mono text-neutral-500 w-8 text-right">{value.toFixed(2)}</span>
     </div>
   )
 }
 
 // ── 当前步骤内容区 ─────────────────────────────────────────
 function ActiveStepPanel() {
-  const { activeStep, historyNodes, workflowPhase, setActiveStep } = useIPStore()
+  const { activeStep, historyNodes, workflowPhase, setActiveStep } = useProject()
 
   // 提炼完成 → 自动跳到「元素提取」
   useEffect(() => {
@@ -94,15 +94,15 @@ function ActiveStepPanel() {
 
   return (
     <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
-      <div className="flex items-center gap-2.5 px-4 pt-3 pb-2 border-b border-neutral-800/60 shrink-0">
+      <div className="flex items-center gap-2.5 px-4 pt-3 pb-2 border-b border-line/60 shrink-0">
         {done
           ? <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
-          : <span className={cn('text-[10px] font-mono font-bold shrink-0', step.color)}>
+          : <span className={cn('text-[14px] font-mono font-bold shrink-0', step.color)}>
               {String(step.index + 1).padStart(2, '0')}
             </span>
         }
-        <p className="text-[12px] font-semibold text-neutral-100">{step.label}</p>
-        <p className="text-[10px] text-neutral-600">{step.sub}</p>
+        <p className="text-[14px] font-semibold text-neutral-100">{step.label}</p>
+        <p className="text-[14px] text-neutral-600">{step.sub}</p>
       </div>
       <div className="px-4 py-3 flex-1">
         <StepComponent />
@@ -113,7 +113,7 @@ function ActiveStepPanel() {
 
 // ── 主组件 ─────────────────────────────────────────────────
 export default function StepAccordion() {
-  const { activeStep } = useIPStore()
+  const { activeStep } = useProject()
   const showIPPanel = activeStep === IP_GENERATE_INDEX
 
   return (

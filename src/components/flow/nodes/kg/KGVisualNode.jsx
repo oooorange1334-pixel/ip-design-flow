@@ -12,7 +12,7 @@ export default memo(function KGVisualNode({ data, selected }) {
         'rounded-xl border overflow-hidden shadow-lg transition-all duration-150 group',
         selected
           ? 'border-cyan-500/60 shadow-cyan-900/20'
-          : 'border-neutral-700/50 hover:border-neutral-600/60'
+          : 'border-line/50 hover:border-neutral-600/60'
       )}
       style={{ width: 180 }}
       onMouseEnter={() => setHovered(true)}
@@ -46,8 +46,8 @@ export default memo(function KGVisualNode({ data, selected }) {
 
       {/* 标签 */}
       <div className="px-2.5 py-2 bg-canvas-900/80 backdrop-blur-sm">
-        <p className="text-[10px] font-medium text-neutral-300 truncate">{data.label}</p>
-        <p className="text-[9px] text-neutral-700 mt-0.5">视觉参考</p>
+        <p className="text-[14px] font-medium text-neutral-300 truncate">{data.label}</p>
+        <p className="text-[15px] text-neutral-700 mt-0.5">视觉参考</p>
       </div>
 
       <Handle type="source" position={Position.Right}

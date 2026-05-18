@@ -56,12 +56,12 @@ export default function ViewPanel({ label, imageUrl, isGenerating, syncState, on
   }
 
   return (
-    <div className="flex-1 flex flex-col min-w-0 border border-neutral-800 rounded-lg overflow-hidden bg-canvas-950">
+    <div className="flex-1 flex flex-col min-w-0 border border-line rounded-lg overflow-hidden bg-canvas-950">
       {/* 视图标题栏 */}
-      <div className="flex items-center justify-between px-2.5 py-1.5 bg-canvas-900 border-b border-neutral-800 shrink-0">
-        <span className="text-[10px] font-mono text-neutral-500">{label}</span>
+      <div className="flex items-center justify-between px-2.5 py-1.5 bg-canvas-900 border-b border-line shrink-0">
+        <span className="text-[14px] font-mono text-neutral-500">{label}</span>
         <div className="flex items-center gap-2">
-          <span className="text-[9px] font-mono text-neutral-700">{Math.round(zoom * 100)}%</span>
+          <span className="text-[15px] font-mono text-neutral-700">{Math.round(zoom * 100)}%</span>
           <button
             onClick={() => onSyncChange({ zoom: 1, panX: 0, panY: 0 })}
             className="text-neutral-700 hover:text-neutral-400 transition-colors"
@@ -90,7 +90,7 @@ export default function ViewPanel({ label, imageUrl, isGenerating, syncState, on
           <div className="flex flex-col items-center gap-2">
             <div className="w-full h-full absolute inset-0 bg-gradient-to-br from-canvas-800/50 to-canvas-900/50 animate-pulse" />
             <Loader2 size={16} className="text-generate animate-spin relative z-10" />
-            <span className="text-[9px] font-mono text-neutral-700 relative z-10">渲染中...</span>
+            <span className="text-[15px] font-mono text-neutral-700 relative z-10">渲染中...</span>
           </div>
         ) : imageUrl ? (
           <img
@@ -103,10 +103,10 @@ export default function ViewPanel({ label, imageUrl, isGenerating, syncState, on
           />
         ) : (
           <div className="flex flex-col items-center gap-1">
-            <div className="w-8 h-8 rounded-full border border-dashed border-neutral-800 flex items-center justify-center">
-              <span className="text-[8px] text-neutral-700">{label.charAt(0)}</span>
+            <div className="w-8 h-8 rounded-full border border-dashed border-line flex items-center justify-center">
+              <span className="text-[14px] text-neutral-700">{label.charAt(0)}</span>
             </div>
-            <span className="text-[9px] text-neutral-700">{label}</span>
+            <span className="text-[15px] text-neutral-700">{label}</span>
           </div>
         )}
       </div>

@@ -1,7 +1,7 @@
 import { useDraggable } from '@dnd-kit/core'
 import { Pin, PinOff, Layers, Palette, Star, Loader2 } from 'lucide-react'
 import { cn } from '../../../lib/utils'
-import useIPStore from '../../../store/useIPStore'
+import useProject from '../../../store/useProject'
 
 const CATEGORY_CONFIG = {
   form:  { label: 'Form · 形体',    Icon: Layers,  color: 'text-blue-400',  border: 'border-blue-800/40'  },
@@ -10,7 +10,7 @@ const CATEGORY_CONFIG = {
 }
 
 function AssetCard({ item }) {
-  const { lockElement, unlockElement, lockedElements } = useIPStore()
+  const { lockElement, unlockElement, lockedElements } = useProject()
   const isLocked = lockedElements.some(e => e.id === item.id)
 
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -27,7 +27,7 @@ function AssetCard({ item }) {
         'relative rounded-lg border overflow-hidden cursor-grab active:cursor-grabbing transition-all group',
         isDragging
           ? 'opacity-40 scale-95 ring-1 ring-accent'
-          : 'border-neutral-800 hover:border-neutral-600'
+          : 'border-line hover:border-neutral-600'
       )}
     >
       <div className="aspect-square bg-canvas-800 overflow-hidden">
@@ -38,10 +38,10 @@ function AssetCard({ item }) {
         />
       </div>
       <div className="px-1.5 py-1 bg-canvas-900/90">
-        <p className="text-[9px] text-neutral-400 truncate">{item.label}</p>
+        <p className="text-[15px] text-neutral-400 truncate">{item.label}</p>
         <div className="flex flex-wrap gap-0.5 mt-0.5">
           {item.tags?.slice(0, 2).map(t => (
-            <span key={t} className="text-[8px] text-neutral-700 bg-neutral-800 px-1 rounded">{t}</span>
+            <span key={t} className="text-[14px] text-neutral-700 bg-neutral-800 px-1 rounded">{t}</span>
           ))}
         </div>
       </div>
@@ -62,7 +62,7 @@ function AssetCard({ item }) {
 
       {/* 拖拽提示 */}
       <div className="absolute inset-x-0 bottom-0 h-5 bg-gradient-to-t from-accent/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none flex items-end justify-center pb-0.5">
-        <span className="text-[8px] text-accent/70">拖入画布</span>
+        <span className="text-[14px] text-accent/70">拖入画布</span>
       </div>
     </div>
   )
@@ -75,8 +75,8 @@ function CategorySection({ categoryKey, items }) {
     <div className="mb-3">
       <div className="flex items-center gap-1.5 mb-1.5">
         <cfg.Icon size={11} className={cfg.color} />
-        <span className={cn('text-[10px] font-semibold', cfg.color)}>{cfg.label}</span>
-        <span className="text-[9px] text-neutral-700 ml-auto">{items.length} 项</span>
+        <span className={cn('text-[14px] font-semibold', cfg.color)}>{cfg.label}</span>
+        <span className="text-[15px] text-neutral-700 ml-auto">{items.length} 项</span>
       </div>
       <div className="grid grid-cols-3 gap-1.5">
         {items.map(item => <AssetCard key={item.id} item={item} />)}
@@ -86,7 +86,7 @@ function CategorySection({ categoryKey, items }) {
 }
 
 export default function Step02Elements() {
-  const { materialLibrary, workflowPhase, rfNodes, generateFromSelection, isGenerating } = useIPStore()
+  const { materialLibrary, workflowPhase, rfNodes, generateFromSelection, isGenerating } = useProject()
 
   const isExtracting = workflowPhase === 'extracting'
   const hasLibrary = materialLibrary.form.length > 0 || materialLibrary.cmf.length > 0 || materialLibrary.motif.length > 0
@@ -106,8 +106,8 @@ export default function Step02Elements() {
           <div className="absolute inset-0 flex items-center justify-center text-sm">✨</div>
         </div>
         <div className="text-center">
-          <p className="text-[12px] font-medium text-neutral-200">AI 正在解析...</p>
-          <p className="text-[10px] text-neutral-600 mt-0.5">提炼 Form · CMF · Motif</p>
+          <p className="text-[14px] font-medium text-neutral-200">AI 正在解析...</p>
+          <p className="text-[14px] text-neutral-600 mt-0.5">提炼 Form · CMF · Motif</p>
         </div>
       </div>
     )
@@ -116,7 +116,7 @@ export default function Step02Elements() {
   if (!hasLibrary) {
     return (
       <div className="py-2">
-        <p className="text-[10px] text-neutral-700 italic">
+        <p className="text-[14px] text-neutral-700 italic">
           请先在「灵感调研」步骤框选参考图并点击「提炼核心资产」
         </p>
       </div>
@@ -131,12 +131,12 @@ export default function Step02Elements() {
       <CategorySection categoryKey="motif" items={materialLibrary.motif} />
 
       {/* 生成按钮 */}
-      <div className="border-t border-neutral-800 pt-3">
+      <div className="border-t border-line pt-3">
         <button
           onClick={() => generateFromSelection(selectedParamIds)}
           disabled={!canGenerate || isGenerating}
           className={cn(
-            'w-full flex items-center justify-center gap-2 py-2 rounded-md text-[11px] font-medium transition-all',
+            'w-full flex items-center justify-center gap-2 py-2 rounded-md text-[15px] font-medium transition-all',
             canGenerate && !isGenerating
               ? 'bg-accent hover:bg-accent-hover text-white shadow-md shadow-accent/20 active:scale-[0.98]'
               : 'bg-neutral-800 text-neutral-600 cursor-not-allowed'

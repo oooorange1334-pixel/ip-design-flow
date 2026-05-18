@@ -2,7 +2,7 @@ import { memo } from 'react'
 import { Handle, Position } from 'reactflow'
 import { Pin, PinOff, Layers, Palette, Star } from 'lucide-react'
 import { cn } from '../../../lib/utils'
-import useIPStore from '../../../store/useIPStore'
+import useProject from '../../../store/useProject'
 
 const CATEGORY_STYLE = {
   form:  { icon: Layers,  color: 'text-blue-400',  bg: 'bg-blue-900/15',  border: 'border-blue-700/40'  },
@@ -11,7 +11,7 @@ const CATEGORY_STYLE = {
 }
 
 export default memo(function ParameterNode({ id, data, selected }) {
-  const { lockElement, unlockElement, lockedElements } = useIPStore()
+  const { lockElement, unlockElement, lockedElements } = useProject()
   const isLocked = lockedElements.some(e => e.id === id)
   const style = CATEGORY_STYLE[data.category] ?? CATEGORY_STYLE.form
   const Icon = style.icon
@@ -31,7 +31,7 @@ export default memo(function ParameterNode({ id, data, selected }) {
       {/* 标题行 */}
       <div className="flex items-center gap-1.5 px-2.5 pt-2 pb-1">
         <Icon size={11} className={style.color} />
-        <span className={cn('text-[9px] font-mono uppercase tracking-wider', style.color)}>
+        <span className={cn('text-[15px] font-mono uppercase tracking-wider', style.color)}>
           {data.category}
         </span>
         <button
@@ -57,11 +57,11 @@ export default memo(function ParameterNode({ id, data, selected }) {
 
       {/* 标签 */}
       <div className="px-2.5 pb-2 pt-1.5">
-        <p className="text-[11px] font-semibold text-neutral-200 leading-tight">{data.label}</p>
+        <p className="text-[15px] font-semibold text-neutral-200 leading-tight">{data.label}</p>
         {data.tags?.length > 0 && (
           <div className="flex flex-wrap gap-0.5 mt-1">
             {data.tags.slice(0, 3).map(t => (
-              <span key={t} className="text-[8px] text-neutral-600 bg-neutral-800/60 px-1 rounded">{t}</span>
+              <span key={t} className="text-[14px] text-neutral-600 bg-neutral-800/60 px-1 rounded">{t}</span>
             ))}
           </div>
         )}

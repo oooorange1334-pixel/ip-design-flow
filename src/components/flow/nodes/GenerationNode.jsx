@@ -2,7 +2,7 @@ import { memo, useState } from 'react'
 import { Handle, Position } from 'reactflow'
 import { Pin, PinOff, RefreshCw, Bookmark, Loader2, Columns3 } from 'lucide-react'
 import { cn } from '../../../lib/utils'
-import useIPStore from '../../../store/useIPStore'
+import useProject from '../../../store/useProject'
 import { generateTripleViewSet } from '../../../lib/api/mockGenerate'
 
 const STEP_COLORS = {
@@ -17,7 +17,7 @@ const STEP_COLORS = {
 const STEP_LABELS = ['灵感', '元素', '三视图', '动作', '场景', '文创']
 
 export default memo(function GenerationNode({ id, data, selected }) {
-  const { lockElement, unlockElement, lockedElements, updateRFNodeData, addRFNode, rfNodes, ipContext } = useIPStore()
+  const { lockElement, unlockElement, lockedElements, updateRFNodeData, addRFNode, rfNodes, ipContext } = useProject()
   const [hovered, setHovered] = useState(false)
   const [imgLoaded, setImgLoaded] = useState(false)
   const [generatingTriple, setGeneratingTriple] = useState(false)
@@ -81,7 +81,7 @@ export default memo(function GenerationNode({ id, data, selected }) {
         'w-[220px] rounded-lg border bg-canvas-800 shadow-xl transition-all duration-150 overflow-hidden',
         selected
           ? 'border-accent ring-1 ring-accent/40 shadow-accent/20'
-          : 'border-neutral-700/60 hover:border-neutral-600',
+          : 'border-line/60 hover:border-neutral-600',
       )}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -94,12 +94,12 @@ export default memo(function GenerationNode({ id, data, selected }) {
       />
 
       {/* 顶部标签栏 */}
-      <div className={cn('flex items-center justify-between px-2.5 py-1.5 border-b border-neutral-700/60')}>
+      <div className={cn('flex items-center justify-between px-2.5 py-1.5 border-b border-line/60')}>
         <div className="flex items-center gap-1.5">
-          <span className={cn('text-[10px] font-mono font-medium', stepColor.split(' ')[0])}>
+          <span className={cn('text-[14px] font-mono font-medium', stepColor.split(' ')[0])}>
             {String((data.step ?? 0) + 1).padStart(2, '0')}
           </span>
-          <span className="text-[10px] text-neutral-400">{data.label ?? stepLabel}</span>
+          <span className="text-[14px] text-neutral-400">{data.label ?? stepLabel}</span>
         </div>
         {/* Pin 按钮 — 悬浮时出现 */}
         <button
@@ -125,7 +125,7 @@ export default memo(function GenerationNode({ id, data, selected }) {
             {/* 骨架动画 */}
             <div className="w-full h-full absolute inset-0 bg-gradient-to-br from-canvas-800 to-canvas-900 animate-pulse" />
             <Loader2 size={18} className="text-accent animate-spin relative z-10" />
-            <span className="text-[10px] text-neutral-600 relative z-10 font-mono">生成中...</span>
+            <span className="text-[14px] text-neutral-600 relative z-10 font-mono">生成中...</span>
           </div>
         ) : data.imageUrl ? (
           <>
@@ -151,15 +151,15 @@ export default memo(function GenerationNode({ id, data, selected }) {
         {/* 种子号浮层 */}
         {data.seed && !data.isGenerating && (
           <div className="absolute bottom-1.5 right-1.5 bg-black/60 rounded px-1.5 py-0.5">
-            <span className="text-[9px] font-mono text-neutral-500">#{data.seed}</span>
+            <span className="text-[15px] font-mono text-neutral-500">#{data.seed}</span>
           </div>
         )}
       </div>
 
       {/* 底部操作栏 */}
-      <div className="flex items-center gap-1 px-2 py-1.5 border-t border-neutral-700/60">
+      <div className="flex items-center gap-1 px-2 py-1.5 border-t border-line/60">
         <button
-          className="flex-1 flex items-center justify-center gap-1 py-1 rounded text-[10px] text-neutral-500 hover:text-neutral-200 hover:bg-neutral-700/50 transition-colors"
+          className="flex-1 flex items-center justify-center gap-1 py-1 rounded text-[14px] text-neutral-500 hover:text-neutral-200 hover:bg-neutral-700/50 transition-colors"
           title="重新生成"
           disabled={data.isGenerating}
         >
@@ -174,7 +174,7 @@ export default memo(function GenerationNode({ id, data, selected }) {
               onClick={handleGenerateTripleView}
               disabled={generatingTriple}
               className={cn(
-                'flex-1 flex items-center justify-center gap-1 py-1 rounded text-[10px] transition-colors',
+                'flex-1 flex items-center justify-center gap-1 py-1 rounded text-[14px] transition-colors',
                 generatingTriple
                   ? 'text-generate/50 cursor-not-allowed'
                   : 'text-neutral-500 hover:text-generate hover:bg-generate/10'
@@ -188,7 +188,7 @@ export default memo(function GenerationNode({ id, data, selected }) {
           </>
         )}
         <button
-          className="flex-1 flex items-center justify-center gap-1 py-1 rounded text-[10px] text-neutral-500 hover:text-accent hover:bg-accent/10 transition-colors"
+          className="flex-1 flex items-center justify-center gap-1 py-1 rounded text-[14px] text-neutral-500 hover:text-accent hover:bg-accent/10 transition-colors"
           title="设为基准图"
           disabled={data.isGenerating}
         >

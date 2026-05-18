@@ -1,5 +1,6 @@
+import { useState, useRef } from 'react'
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels'
-import { History, Settings, Zap, Lock } from 'lucide-react'
+import { History, Settings, Zap, Lock, Plus, ChevronDown, Trash2, Check } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import useIPStore from '../../store/useIPStore'
 
@@ -13,28 +14,132 @@ const STEPS = [
   { id: 6, num: '07', label: '衍生文创',    color: 'text-pink-400'    },
 ]
 
-function Topbar() {
-  const { lockedElements, isGenerating } = useIPStore()
+// ── 项目切换下拉 ──────────────────────────────────────────
+function ProjectDropdown() {
+  const { projects, currentProjectId, createProject, switchProject, deleteProject, renameProject } = useIPStore()
+  const [open, setOpen] = useState(false)
+  const [editing, setEditing] = useState(null)
+  const [editVal, setEditVal] = useState('')
+  const current = projects.find(p => p.id === currentProjectId) ?? projects[0]
+
+  function startEdit(proj, e) {
+    e.stopPropagation()
+    setEditing(proj.id)
+    setEditVal(proj.name)
+  }
+  function commitEdit(id) {
+    if (editVal.trim()) renameProject(id, editVal.trim())
+    setEditing(null)
+  }
+
   return (
-    <header className="h-10 flex items-center justify-between px-3 bg-canvas-900 border-b border-neutral-800 shrink-0 z-20">
-      <div className="flex items-center gap-2.5">
-        <div className="w-5 h-5 rounded bg-accent flex items-center justify-center shrink-0">
+    <div className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-neutral-800/60 hover:bg-neutral-800 border border-line/50 transition-colors max-w-[180px]"
+      >
+        <span className="text-[15px] font-medium text-neutral-200 truncate">{current?.name}</span>
+        <ChevronDown size={10} className={cn('text-neutral-500 shrink-0 transition-transform', open && 'rotate-180')} />
+      </button>
+
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute top-full left-0 mt-1 w-56 bg-canvas-800 border border-line rounded-lg shadow-2xl shadow-black/40 z-50 overflow-hidden">
+            <div className="p-1">
+              {projects.map(proj => (
+                <div
+                  key={proj.id}
+                  onClick={() => { switchProject(proj.id); setOpen(false) }}
+                  className={cn(
+                    'flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer group',
+                    proj.id === currentProjectId
+                      ? 'bg-accent/10'
+                      : 'hover:bg-neutral-700/50'
+                  )}
+                >
+                  {proj.id === currentProjectId
+                    ? <Check size={11} className="text-accent shrink-0" />
+                    : <span className="w-[11px] shrink-0" />
+                  }
+                  {editing === proj.id ? (
+                    <input
+                      autoFocus
+                      value={editVal}
+                      onChange={e => setEditVal(e.target.value)}
+                      onBlur={() => commitEdit(proj.id)}
+                      onKeyDown={e => { if (e.key === 'Enter') commitEdit(proj.id) }}
+                      onClick={e => e.stopPropagation()}
+                      className="flex-1 bg-canvas-900 border border-accent/50 rounded px-1 py-0.5 text-[15px] text-neutral-100 focus:outline-none"
+                    />
+                  ) : (
+                    <span
+                      className="flex-1 text-[15px] text-neutral-300 truncate"
+                      onDoubleClick={e => startEdit(proj, e)}
+                    >
+                      {proj.name}
+                    </span>
+                  )}
+                  {projects.length > 1 && (
+                    <button
+                      onClick={e => { e.stopPropagation(); deleteProject(proj.id) }}
+                      className="opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-red-400 transition-all"
+                    >
+                      <Trash2 size={10} />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="border-t border-line p-1">
+              <button
+                onClick={() => { createProject(`项目 ${projects.length + 1}`); setOpen(false) }}
+                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-[15px] text-neutral-500 hover:text-neutral-300 hover:bg-neutral-700/50 transition-colors"
+              >
+                <Plus size={11} />
+                新建项目
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+// ── 顶栏 ──────────────────────────────────────────────────
+function Topbar() {
+  const { currentProject, isGenerating } = useIPStore()
+  const proj = currentProject()
+  const lockedCount = proj?.lockedElements?.length ?? 0
+
+  return (
+    <header className="h-10 flex items-center gap-3 px-3 bg-canvas-900 border-b border-line shrink-0 z-20">
+      {/* Logo */}
+      <div className="flex items-center gap-2 shrink-0">
+        <div className="w-5 h-5 rounded bg-accent flex items-center justify-center">
           <Zap size={10} className="text-white" />
         </div>
-        <span className="text-[13px] font-semibold text-neutral-100 tracking-tight">IP 设计流</span>
-        <span className="text-[9px] text-neutral-700 font-mono">v0.2.0</span>
+        <span className="text-[14px] font-semibold text-neutral-400 tracking-tight">IP 设计流</span>
       </div>
-      <div className="flex items-center gap-3">
+
+      <div className="w-px h-4 bg-neutral-800 shrink-0" />
+
+      {/* 项目下拉 */}
+      <ProjectDropdown />
+
+      {/* 右侧状态 */}
+      <div className="ml-auto flex items-center gap-3">
         {isGenerating && (
-          <div className="flex items-center gap-1.5 text-[11px] text-generate">
+          <div className="flex items-center gap-1.5 text-[15px] text-generate">
             <span className="w-1.5 h-1.5 rounded-full bg-generate animate-pulse" />
             生成中...
           </div>
         )}
-        {lockedElements.length > 0 && (
-          <div className="flex items-center gap-1 text-[11px] text-locked">
+        {lockedCount > 0 && (
+          <div className="flex items-center gap-1 text-[15px] text-locked">
             <Lock size={10} />
-            <span>{lockedElements.length} 已锁定</span>
+            <span>{lockedCount} 锁定</span>
           </div>
         )}
         <button className="w-6 h-6 rounded flex items-center justify-center text-neutral-600 hover:text-neutral-300 hover:bg-neutral-800 transition-colors">
@@ -48,12 +153,15 @@ function Topbar() {
   )
 }
 
+// ── 步骤导航 ──────────────────────────────────────────────
 function StepNavContent() {
-  const { activeStep, setActiveStep } = useIPStore()
+  const { currentProject, setActiveStep } = useIPStore()
+  const activeStep = currentProject()?.activeStep ?? 0
+
   return (
     <div className="h-full flex flex-col bg-canvas-900 overflow-hidden">
       <div className="px-3 pt-3 pb-1 shrink-0">
-        <p className="text-[10px] text-neutral-700 font-mono uppercase tracking-wider px-1 mb-1">工作流</p>
+        <p className="text-[15px] text-neutral-700 font-mono uppercase tracking-wider px-1 mb-1">工作流</p>
       </div>
       <nav className="flex-1 px-2 space-y-0.5 overflow-y-auto">
         {STEPS.map(step => {
@@ -64,15 +172,13 @@ function StepNavContent() {
               onClick={() => setActiveStep(step.id)}
               className={cn(
                 'w-full flex items-center gap-2 px-2 py-2 rounded-md text-left transition-all',
-                active
-                  ? 'bg-accent/10 text-neutral-100'
-                  : 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/60'
+                active ? 'bg-accent/10 text-neutral-100' : 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/60'
               )}
             >
-              <span className={cn('font-mono text-[10px] w-4 shrink-0 tabular-nums', active ? step.color : 'text-neutral-700')}>
+              <span className={cn('font-mono text-[14px] w-4 shrink-0 tabular-nums', active ? step.color : 'text-neutral-700')}>
                 {step.num}
               </span>
-              <span className="text-[11px] font-medium truncate flex-1">{step.label}</span>
+              <span className="text-[15px] font-medium truncate flex-1">{step.label}</span>
               {active && <span className="w-1 h-1 rounded-full bg-accent shrink-0" />}
             </button>
           )
@@ -82,7 +188,7 @@ function StepNavContent() {
   )
 }
 
-// ── 横向把手 ──────────────────────────────────────────────
+// ── 把手 ──────────────────────────────────────────────────
 function HResizeHandle() {
   return (
     <PanelResizeHandle
@@ -90,15 +196,12 @@ function HResizeHandle() {
       className="group relative flex items-center justify-center"
       style={{ width: 5, cursor: 'col-resize' }}
     >
-      {/* 默认细线 */}
-      <div className="w-px h-full bg-neutral-800 group-hover:bg-accent/60 group-data-[resize-handle-state=drag]:bg-accent transition-colors" />
-      {/* 中央把手点 */}
-      <div className="absolute top-1/2 -translate-y-1/2 w-1 h-8 rounded-full bg-neutral-700 group-hover:bg-accent/80 group-data-[resize-handle-state=drag]:bg-accent transition-colors" />
+      <div className="w-px h-full bg-neutral-600 group-hover:bg-accent/70 group-data-[resize-handle-state=drag]:bg-accent transition-colors" />
+      <div className="absolute top-1/2 -translate-y-1/2 w-1 h-8 rounded-full bg-neutral-500 group-hover:bg-accent/90 group-data-[resize-handle-state=drag]:bg-accent transition-colors" />
     </PanelResizeHandle>
   )
 }
 
-// ── 纵向把手 ──────────────────────────────────────────────
 function VResizeHandle() {
   return (
     <PanelResizeHandle
@@ -106,78 +209,61 @@ function VResizeHandle() {
       className="group relative flex items-center justify-center shrink-0"
       style={{ height: 5, cursor: 'row-resize' }}
     >
-      {/* 默认细线 */}
-      <div className="h-px w-full bg-neutral-800 group-hover:bg-accent/50 group-data-[resize-handle-state=drag]:bg-accent/70 transition-colors" />
-      {/* 中央双横线操作块 */}
-      <div className="absolute left-1/2 -translate-x-1/2 flex flex-col gap-[3px] px-3 py-1.5 rounded bg-neutral-800/90 group-hover:bg-neutral-700 group-data-[resize-handle-state=drag]:bg-neutral-700 transition-colors">
-        <div className="w-8 h-[1.5px] rounded-full bg-neutral-600 group-hover:bg-accent/60 group-data-[resize-handle-state=drag]:bg-accent/80 transition-colors" />
-        <div className="w-8 h-[1.5px] rounded-full bg-neutral-600 group-hover:bg-accent/60 group-data-[resize-handle-state=drag]:bg-accent/80 transition-colors" />
+      <div className="h-px w-full bg-neutral-600 group-hover:bg-accent/60 group-data-[resize-handle-state=drag]:bg-accent/80 transition-colors" />
+      <div className="absolute left-1/2 -translate-x-1/2 flex flex-col gap-[3px] px-3 py-1.5 rounded bg-neutral-700 group-hover:bg-neutral-600 group-data-[resize-handle-state=drag]:bg-neutral-600 transition-colors">
+        <div className="w-8 h-[1.5px] rounded-full bg-neutral-400 group-hover:bg-accent/70 group-data-[resize-handle-state=drag]:bg-accent transition-colors" />
+        <div className="w-8 h-[1.5px] rounded-full bg-neutral-400 group-hover:bg-accent/70 group-data-[resize-handle-state=drag]:bg-accent transition-colors" />
       </div>
     </PanelResizeHandle>
   )
 }
 
-export default function AppShell({ canvas, controlPanel }) {
+// ── 主布局 ────────────────────────────────────────────────
+export default function AppShell({ canvas, controlPanel, contextDrawer }) {
   const { hLayoutSizes, vLayoutSizes, setHLayoutSizes, setVLayoutSizes } = useIPStore()
 
   return (
     <div className="h-full flex flex-col bg-canvas-950 text-neutral-200 overflow-hidden">
       <Topbar />
 
-      {/* 横向主分栏 — 用 style 确保高度充满 */}
       <PanelGroup
         direction="horizontal"
         onLayout={setHLayoutSizes}
         style={{ flex: 1, minHeight: 0 }}
       >
         {/* 左侧步骤导航 */}
-        <Panel
-          defaultSize={hLayoutSizes[0]}
-          minSize={10}
-          maxSize={22}
-          style={{ overflow: 'hidden' }}
-        >
+        <Panel defaultSize={hLayoutSizes[0]} minSize={9} maxSize={20} style={{ overflow: 'hidden' }}>
           <StepNavContent />
         </Panel>
 
         <HResizeHandle />
 
-        {/* 右侧主工作区 */}
-        <Panel
-          defaultSize={hLayoutSizes[1]}
-          minSize={50}
-          style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
-        >
-          {/* 纵向嵌套分栏 */}
-          <PanelGroup
-            direction="vertical"
-            onLayout={setVLayoutSizes}
-            style={{ flex: 1, minHeight: 0 }}
-          >
-            {/* 上方画布 */}
+        {/* 中央主工作区 */}
+        <Panel defaultSize={hLayoutSizes[1]} minSize={40} style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <PanelGroup direction="vertical" onLayout={setVLayoutSizes} style={{ flex: 1, minHeight: 0 }}>
             <Panel
-              defaultSize={vLayoutSizes[0]}
-              minSize={20}
-              maxSize={85}
+              defaultSize={vLayoutSizes[0]} minSize={20} maxSize={85}
               style={{ overflow: 'hidden', position: 'relative' }}
               className="bg-canvas-950"
             >
               {canvas}
             </Panel>
-
             <VResizeHandle />
-
-            {/* 下方控制舱 */}
             <Panel
-              defaultSize={vLayoutSizes[1]}
-              minSize={15}
-              maxSize={80}
+              defaultSize={vLayoutSizes[1]} minSize={15} maxSize={80}
               style={{ overflow: 'hidden' }}
-              className="bg-canvas-900 border-t border-neutral-800"
+              className="bg-canvas-900 border-t border-line"
             >
               {controlPanel}
             </Panel>
           </PanelGroup>
+        </Panel>
+
+        <HResizeHandle />
+
+        {/* 右侧 Context Drawer */}
+        <Panel defaultSize={hLayoutSizes[2]} minSize={12} maxSize={40} style={{ overflow: 'hidden' }}>
+          {contextDrawer}
         </Panel>
       </PanelGroup>
     </div>

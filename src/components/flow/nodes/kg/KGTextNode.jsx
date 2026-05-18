@@ -21,7 +21,7 @@ export default memo(function KGTextNode({ data, selected }) {
         'rounded-xl border bg-neutral-900/60 backdrop-blur-md shadow-lg transition-all duration-150',
         selected
           ? 'border-violet-500/60 shadow-violet-900/20'
-          : 'border-neutral-700/50 hover:border-neutral-600/60'
+          : 'border-line/50 hover:border-neutral-600/60'
       )}
       style={{ width: 240 }}
     >
@@ -31,15 +31,15 @@ export default memo(function KGTextNode({ data, selected }) {
       <div className="p-3">
         {/* 来源标签 */}
         <div className="flex items-center gap-1.5 mb-2">
-          <div className={cn('flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.5 rounded-md bg-neutral-800', src.color)}>
+          <div className={cn('flex items-center gap-1 text-[15px] font-mono px-1.5 py-0.5 rounded-md bg-neutral-800', src.color)}>
             <Icon size={9} />
             <span>{src.label}</span>
           </div>
-          <span className="text-[9px] text-neutral-600">文本洞察</span>
+          <span className="text-[15px] text-neutral-600">文本洞察</span>
         </div>
 
         {/* 主标题 */}
-        <p className="text-[11px] font-semibold text-neutral-100 leading-snug mb-1.5">
+        <p className="text-[15px] font-semibold text-neutral-100 leading-snug mb-1.5">
           {data.label}
         </p>
 
@@ -47,13 +47,13 @@ export default memo(function KGTextNode({ data, selected }) {
         {data.detail && (
           <>
             {expanded && (
-              <p className="text-[10px] text-neutral-500 leading-relaxed mb-1.5">
+              <p className="text-[14px] text-neutral-500 leading-relaxed mb-1.5">
                 {data.detail}
               </p>
             )}
             <button
               onClick={() => setExpanded(!expanded)}
-              className="flex items-center gap-0.5 text-[9px] text-neutral-700 hover:text-neutral-500 transition-colors"
+              className="flex items-center gap-0.5 text-[15px] text-neutral-700 hover:text-neutral-500 transition-colors"
             >
               {expanded ? <ChevronUp size={9} /> : <ChevronDown size={9} />}
               {expanded ? '收起' : '展开详情'}
