@@ -28,26 +28,26 @@ const IP_GENERATE_INDEX = 2
 function IPContextPanel() {
   const { ipContext, updateIPContext } = useProject()
   return (
-    <div className="w-64 shrink-0 border-r border-line flex flex-col h-full overflow-y-auto">
+    <div className="w-64 shrink-0 divider-r flex flex-col h-full overflow-y-auto glass-strong">
       <div className="px-4 pt-3 pb-1">
-        <p className="text-[14px] font-mono text-neutral-600 uppercase tracking-wider">IP 全局设定</p>
+        <p className="text-[14px] font-mono text-neutral-500 uppercase tracking-wider">IP 全局设定</p>
       </div>
       <div className="px-3 pb-3 space-y-2.5 flex-1">
         <input
-          className="w-full bg-canvas-800 border border-line rounded px-2.5 py-1.5 text-[15px] text-neutral-200 placeholder-neutral-700 focus:outline-none focus:border-accent transition-colors"
+          className="w-full bg-black/30 border border-glass-edge rounded-lg px-2.5 py-1.5 text-[15px] text-neutral-200 placeholder-neutral-600 focus:outline-none focus:border-accent focus:shadow-neon-purple-sm transition-all"
           placeholder="性格定位，如：高科技机器人"
           value={ipContext.personality}
           onChange={e => updateIPContext({ personality: e.target.value })}
         />
         <div className="flex gap-1.5">
           <input
-            className="flex-1 bg-canvas-800 border border-line rounded px-2 py-1.5 text-[15px] text-neutral-200 placeholder-neutral-700 focus:outline-none focus:border-accent transition-colors"
+            className="flex-1 bg-black/30 border border-glass-edge rounded-lg px-2 py-1.5 text-[15px] text-neutral-200 placeholder-neutral-600 focus:outline-none focus:border-accent focus:shadow-neon-purple-sm transition-all"
             placeholder="主材质"
             value={ipContext.material}
             onChange={e => updateIPContext({ material: e.target.value })}
           />
           <input
-            className="flex-1 bg-canvas-800 border border-line rounded px-2 py-1.5 text-[15px] text-neutral-200 placeholder-neutral-700 focus:outline-none focus:border-accent transition-colors"
+            className="flex-1 bg-black/30 border border-glass-edge rounded-lg px-2 py-1.5 text-[15px] text-neutral-200 placeholder-neutral-600 focus:outline-none focus:border-accent focus:shadow-neon-purple-sm transition-all"
             placeholder="点缀件"
             value={ipContext.accent}
             onChange={e => updateIPContext({ accent: e.target.value })}
@@ -62,16 +62,20 @@ function IPContextPanel() {
 }
 
 function SliderRow({ label, value, onChange, color = 'accent' }) {
+  const COLOR_HEX = { accent: '#7C4DFF', cyan: '#22D3EE' }
+  const c = COLOR_HEX[color] ?? COLOR_HEX.accent
+  const v = Number.isFinite(value) ? value : 0
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[14px] text-neutral-600 w-10 shrink-0">{label}</span>
+      <span className="text-[14px] text-neutral-400 w-10 shrink-0">{label}</span>
       <input
         type="range" min="0" max="1" step="0.01"
-        value={value}
+        value={v}
         onChange={e => onChange(parseFloat(e.target.value))}
-        className={cn('flex-1 h-0.5 cursor-pointer', color === 'cyan' ? 'accent-cyan-500' : 'accent-violet-500')}
+        className="vibe-slider flex-1"
+        style={{ '--c': c, '--fill': `${Math.round(v * 100)}%` }}
       />
-      <span className="text-[14px] font-mono text-neutral-500 w-8 text-right">{value.toFixed(2)}</span>
+      <span className="text-[14px] font-mono w-8 text-right" style={{ color: c }}>{v.toFixed(2)}</span>
     </div>
   )
 }
@@ -94,7 +98,7 @@ function ActiveStepPanel() {
 
   return (
     <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
-      <div className="flex items-center gap-2.5 px-4 pt-3 pb-2 border-b border-line/60 shrink-0">
+      <div className="flex items-center gap-2.5 px-4 pt-4 pb-3 divider-x shrink-0">
         {done
           ? <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
           : <span className={cn('text-[14px] font-mono font-bold shrink-0', step.color)}>
@@ -102,9 +106,9 @@ function ActiveStepPanel() {
             </span>
         }
         <p className="text-[14px] font-semibold text-neutral-100">{step.label}</p>
-        <p className="text-[14px] text-neutral-600">{step.sub}</p>
+        <p className="text-[14px] text-neutral-500">{step.sub}</p>
       </div>
-      <div className="px-4 py-3 flex-1">
+      <div className="px-4 py-4 flex-1">
         <StepComponent />
       </div>
     </div>

@@ -20,8 +20,8 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    /* 整体背景色跟随 canvas-950 */
-    background: #0d1117;
+    /* 整体背景色 → Vibe OS 碳黑 */
+    background: #0B0D13;
     color: #e6edf3;
   }
 
@@ -36,6 +36,123 @@
   .text-muted    { @apply text-neutral-500; }
   .border-subtle { border-color: #21262d; }
   .panel         { @apply bg-canvas-900; border: 1px solid #30363d; }
+
+  /* ── Vibe OS 玻璃拟物面板 ───────────────────────────────
+     悬浮面板统一规范：rgba(20,24,34,0.65) + blur20 + 1px 内描边 */
+  .glass-panel {
+    background: rgba(20, 24, 34, 0.65);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+  /* 统一分割线工具类：1px solid rgba(255,255,255,0.08) */
+  .divider-x  { border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+  .divider-t  { border-top:    1px solid rgba(255, 255, 255, 0.08); }
+  .divider-l  { border-left:   1px solid rgba(255, 255, 255, 0.08); }
+  .divider-r  { border-right:  1px solid rgba(255, 255, 255, 0.08); }
+  /* 弱化标签（联想/快捷标签）：极低透明度背景 + 静音灰文字，去边框 */
+  .muted-tag {
+    background: rgba(255, 255, 255, 0.03);
+    color: #8E94A6;
+    border: none;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .muted-tag:hover {
+    background: rgba(124, 77, 255, 0.12);
+    color: #c4b5fd;
+  }
+  /* 全局重心 CTA：通宽渐变高亮按钮 + 霓虹发光 */
+  .cta-primary {
+    background: linear-gradient(90deg, #7C4DFF 0%, #5E35B1 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 18px rgba(124, 77, 255, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    transition: filter 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  }
+  .cta-primary:hover:not(:disabled) {
+    filter: brightness(1.08);
+    box-shadow: 0 6px 24px rgba(124, 77, 255, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+  .cta-primary:active:not(:disabled) { transform: scale(0.985); }
+  .cta-primary:disabled {
+    background: rgba(255, 255, 255, 0.05);
+    color: #5b6172;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+  /* 嵌套在玻璃面板内的卡片：更轻的玻璃层 */
+  .glass-card {
+    background: rgba(28, 33, 46, 0.40);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+  }
+  .glass-card-hover:hover {
+    border-color: rgba(124, 77, 255, 0.35);
+    box-shadow: 0 0 0 1px rgba(124, 77, 255, 0.25), 0 0 16px rgba(124, 77, 255, 0.18);
+  }
+  /* 强玻璃：用于需要更高可读性的信息块 */
+  .glass-strong {
+    background: rgba(16, 19, 28, 0.78);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+  }
+  /* 霓虹紫高亮边（激活态） */
+  .neon-ring {
+    border-color: rgba(124, 77, 255, 0.55) !important;
+    box-shadow: 0 0 0 1px rgba(124, 77, 255, 0.35), 0 0 18px rgba(124, 77, 255, 0.30);
+  }
+}
+
+/* ── Vibe OS 霓虹辉光滑块 ──────────────────────────────────
+   取代浏览器原生 accent-color，统一为渐变轨道 + 霓虹把手 */
+.vibe-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.08);
+  outline: none;
+  cursor: pointer;
+}
+/* 已填充的轨道用 CSS 变量上色（由 JS 传入 --fill 百分比与 --c 主色） */
+.vibe-slider {
+  background: linear-gradient(
+    to right,
+    var(--c, #7C4DFF) 0%,
+    var(--c, #7C4DFF) var(--fill, 50%),
+    rgba(255, 255, 255, 0.08) var(--fill, 50%),
+    rgba(255, 255, 255, 0.08) 100%
+  );
+}
+.vibe-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid var(--c, #7C4DFF);
+  box-shadow: 0 0 8px var(--c, #7C4DFF), 0 0 2px rgba(0, 0, 0, 0.4);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.vibe-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.18);
+  box-shadow: 0 0 14px var(--c, #7C4DFF), 0 0 4px rgba(0, 0, 0, 0.4);
+}
+.vibe-slider:active::-webkit-slider-thumb {
+  transform: scale(1.05);
+}
+.vibe-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid var(--c, #7C4DFF);
+  box-shadow: 0 0 8px var(--c, #7C4DFF);
 }
 
 /* ── React Flow 深色主题 ────────────────────────────────── */

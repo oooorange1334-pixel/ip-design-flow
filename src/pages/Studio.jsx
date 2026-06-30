@@ -8,7 +8,7 @@ import RightContextDrawer from '../components/context/RightContextDrawer'
 import useIPStore from '../store/useIPStore'
 
 function StudioInner() {
-  const { currentProject, addRFNode, setWorkflowPhase } = useIPStore()
+  const { currentProject, addRFNode, addMindImageNode, setWorkflowPhase } = useIPStore()
   const { screenToFlowPosition } = useReactFlow()
   const [dragItem, setDragItem] = useState(null)
 
@@ -18,7 +18,7 @@ function StudioInner() {
 
   const handleDragStart = useCallback((event) => {
     const data = event.active?.data?.current
-    if (data?.type === 'asset' || data?.type === 'drawerImage') {
+    if (data?.type === 'asset' || data?.type === 'drawerImage' || data?.type === 'mindMaterial') {
       setDragItem(data)
     }
   }, [])
@@ -34,6 +34,12 @@ function StudioInner() {
     const clientX = (event.activatorEvent?.clientX ?? 0) + event.delta.x
     const clientY = (event.activatorEvent?.clientY ?? 0) + event.delta.y
     const position = screenToFlowPosition({ x: clientX, y: clientY })
+
+    // 搜索素材拖入 → 思维导图图片节点（mindImage）
+    if (dndData.type === 'mindMaterial') {
+      addMindImageNode({ x: position.x - 84, y: position.y - 70 }, dndData.item)
+      return
+    }
 
     // 素材库卡片拖入 → parameter 节点
     if (dndData.type === 'asset') {
@@ -64,11 +70,12 @@ function StudioInner() {
         },
       })
     }
-  }, [addRFNode, currentProject, screenToFlowPosition, setWorkflowPhase])
+  }, [addRFNode, addMindImageNode, currentProject, screenToFlowPosition, setWorkflowPhase])
 
   const dragPreview = dragItem
-  const previewImg  = dragItem?.type === 'asset' ? dragItem.item?.imageUrl : dragItem?.imageUrl
-  const previewLabel = dragItem?.type === 'asset' ? dragItem.item?.label : dragItem?.label
+  const usesItem = dragItem?.type === 'asset' || dragItem?.type === 'mindMaterial'
+  const previewImg  = usesItem ? dragItem.item?.imageUrl : dragItem?.imageUrl
+  const previewLabel = usesItem ? dragItem.item?.label : dragItem?.label
 
   return (
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>

@@ -11,6 +11,53 @@ export function placeholderUrl(seed, w = 400, h = 400) {
   return `https://picsum.photos/seed/${seed}/${w}/${h}`
 }
 
+// ── 中文关键词 → 英文 Flickr 标签 ────────────────────────
+// LoremFlickr 按 Flickr 标签取图，英文命中率远高于中文。
+// 覆盖快捷标签 + 常见设计/IP 灵感词；逗号分隔的多标签提高主题相关性。
+const ZH_TAG_MAP = {
+  '赛博朋克': 'cyberpunk,neon,night,city',
+  '首钢园':   'industrial,factory,steel,architecture',
+  '生物机械': 'biomechanical,cyborg,mecha,robot',
+  '极简建筑': 'minimal,architecture,concrete,modern',
+  '工业锈蚀': 'rust,industrial,metal,decay',
+  '深海生物': 'deepsea,bioluminescence,jellyfish,ocean',
+  '古典铠甲': 'armor,knight,medieval,metal',
+  '太空站':   'spacestation,space,scifi,futuristic',
+  '机器人':   'robot,mecha,android',
+  '未来':     'futuristic,scifi,future',
+  '科技':     'technology,tech,futuristic',
+  '机甲':     'mecha,robot,mechanical',
+  '霓虹':     'neon,light,glow',
+  '金属':     'metal,steel,chrome',
+  '玻璃':     'glass,transparent,crystal',
+  '自然':     'nature,landscape,organic',
+  '动物':     'animal,wildlife',
+  '建筑':     'architecture,building',
+  '城市':     'city,urban,cityscape',
+  '抽象':     'abstract,texture,pattern',
+  '蒸汽朋克': 'steampunk,gear,brass,victorian',
+  '极简':     'minimal,minimalist,clean',
+  '复古':     'vintage,retro',
+  '可爱':     'cute,kawaii,toy',
+}
+
+// 简单 ASCII 检测：纯英文/数字直接用作标签；否则查映射，查不到回退通用词
+function zhToTag(query) {
+  const q = (query || '').trim()
+  if (!q) return 'design,abstract'
+  if (ZH_TAG_MAP[q]) return ZH_TAG_MAP[q]
+  // 包含中文字符 → 尝试部分匹配映射键，否则回退
+  if (/[\u4e00-\u9fa5]/.test(q)) {
+    for (const key of Object.keys(ZH_TAG_MAP)) {
+      if (q.includes(key)) return ZH_TAG_MAP[key]
+    }
+    return 'design,concept,art'
+  }
+  // 纯英文：空格转逗号当多标签
+  return q.replace(/\s+/g, ',')
+}
+
+
 // ── Prompt 合成 ───────────────────────────────────────────
 export function generatePromptFromNodes(nodes) {
   const parts = []
@@ -63,11 +110,20 @@ function createProject(name = '新项目', id = `proj-${Date.now()}`) {
     // 工作流状态
     workflowPhase: 'moodboard',
     activeStep: 0,
-    moodboard: { searchQuery: '', isSearching: false },
+    // results: 搜索到的图片素材（展示在右侧 Inspector 供拖入画布），不直接进画布
+    moodboard: { searchQuery: '', isSearching: false, results: [] },
     materialLibrary: { form: [], cmf: [], motif: [] },
     knowledgeGraph: { isExtracting: false, sourceLabel: '', uploadedFiles: [] },
     lockedElements: [],
     historyNodes: [],
+    // 灵感调研 AI 生成对话（每项目独立）
+    chat: {
+      refs: [],          // 加入对话的参考节点 [{id,kind,label,imageUrl}]
+      messages: [],      // 对话消息流 [{id,role,text,imageUrl,status}]
+      model: 'GLM-5.2',
+      ratio: '1:1',
+      clarity: '标清',
+    },
     // 画布数据
     rfNodes: [],
     rfEdges: [],
@@ -371,32 +427,312 @@ const useIPStore = create(
         })
       },
 
-      // ── 搜索散图 ───────────────────────────────────────
+      // ── 搜索素材（LoremFlickr 按关键词联网取真图，存入 Inspector） ──
       searchMoodboard: async (query) => {
         const { currentProjectId, _patchProject, currentProject } = get()
         _patchProject(currentProjectId, {
           moodboard: { ...currentProject().moodboard, searchQuery: query, isSearching: true }
         })
-        await new Promise(r => setTimeout(r, 800 + Math.random() * 600))
-        const count = 8 + Math.floor(Math.random() * 5)
-        const seeds = [...SEEDS].sort(() => Math.random() - 0.5).slice(0, count)
-        const newNodes = seeds.map((seed, i) => {
-          const col = i % 4, row = Math.floor(i / 4)
-          return {
-            id: `ref-${seed}-${Date.now()}-${i}`,
-            type: 'reference',
-            position: {
-              x: 80 + col * 220 + (Math.random() - 0.5) * 60,
-              y: 80 + row * 200 + (Math.random() - 0.5) * 60,
-            },
-            data: { imageUrl: placeholderUrl(seed, 320, 240), label: `${query} · ${seed}`, seed },
-          }
-        })
+        await new Promise(r => setTimeout(r, 300))
+
+        // 中文关键词 → 英文标签（LoremFlickr 走 Flickr 标签，英文命中率更高）
+        const tag = zhToTag(query)
+        const count = 10
+        const results = Array.from({ length: count }, (_, i) => ({
+          id: `mat-${Date.now()}-${i}`,
+          // lock=随机数 保证每张不同；多标签用逗号，提高主题相关性
+          imageUrl: `https://loremflickr.com/320/240/${tag}?lock=${Math.floor(Math.random() * 100000) + i}`,
+          label: `${query} · ${i + 1}`,
+          tag,
+        }))
         const proj = get().currentProject()
         get()._patchProject(get().currentProjectId, {
-          moodboard: { ...proj.moodboard, isSearching: false },
-          rfNodes: [...proj.rfNodes.filter(n => n.type !== 'reference'), ...newNodes],
+          moodboard: { ...proj.moodboard, isSearching: false, results },
         })
+      },
+
+      // ── 思维导图：增删节点 ──────────────────────────────
+      // 新增文本主题节点（双击空白画布时调用）
+      addMindTextNode: (position, label = '新主题') => {
+        const id = `mind-text-${Date.now()}`
+        get().addRFNode({
+          id, type: 'mindText',
+          position,
+          data: { label, editing: true },
+        })
+        return id
+      },
+
+      // 新增图片素材节点（从 Inspector 拖入时调用）
+      addMindImageNode: (position, item) => {
+        const id = `mind-img-${item.seed ?? Date.now()}-${Date.now()}`
+        get().addRFNode({
+          id, type: 'mindImage',
+          position,
+          data: { imageUrl: item.imageUrl, label: item.label ?? '素材', seed: item.seed },
+        })
+        return id
+      },
+
+      // 为指定节点新增一个子节点并连线
+      addChildNode: (parentId) => {
+        const { currentProject } = get()
+        const proj = currentProject()
+        const parent = proj.rfNodes.find(n => n.id === parentId)
+        if (!parent) return
+        const childId = `mind-text-${Date.now()}`
+        const childCount = proj.rfEdges.filter(e => e.source === parentId).length
+        get().addRFNode({
+          id: childId, type: 'mindText',
+          position: { x: parent.position.x + 240, y: parent.position.y + childCount * 90 },
+          data: { label: '新分支', editing: true },
+        })
+        get().addRFEdge({
+          id: `e-${parentId}-${childId}`,
+          source: parentId, target: childId,
+          type: 'smoothstep', animated: false,
+          style: { stroke: '#7C4DFF', strokeWidth: 1.5 },
+        })
+      },
+
+      // 删除节点（同时删除相连的边；若是选中节点则清空选中）
+      deleteRFNode: (id) => {
+        const { currentProjectId, _patchProject, currentProject, selectedNode } = get()
+        const proj = currentProject()
+        _patchProject(currentProjectId, {
+          rfNodes: proj.rfNodes.filter(n => n.id !== id),
+          rfEdges: proj.rfEdges.filter(e => e.source !== id && e.target !== id),
+        })
+        if (selectedNode?.id === id) set({ selectedNode: null }, false, 'clearSelectedAfterDelete')
+      },
+
+      // 拖动结束后，自动连接彼此靠近（中心距 < threshold）但尚未连线的思维导图节点
+      autoLinkNearbyNodes: (threshold = 220) => {
+        const { currentProjectId, _patchProject, currentProject } = get()
+        const proj = currentProject()
+        const mindNodes = proj.rfNodes.filter(
+          n => n.type === 'mindText' || n.type === 'mindImage'
+        )
+        if (mindNodes.length < 2) return
+
+        // 节点近似尺寸，用于估算中心点
+        const sizeOf = (n) => n.type === 'mindImage'
+          ? { w: 168, h: 150 }
+          : { w: 150, h: 44 }
+        const centerOf = (n) => {
+          const s = sizeOf(n)
+          return { x: n.position.x + s.w / 2, y: n.position.y + s.h / 2 }
+        }
+
+        const hasEdge = (a, b) =>
+          proj.rfEdges.some(e =>
+            (e.source === a && e.target === b) || (e.source === b && e.target === a)
+          )
+
+        const newEdges = []
+        for (let i = 0; i < mindNodes.length; i++) {
+          for (let j = i + 1; j < mindNodes.length; j++) {
+            const a = mindNodes[i], b = mindNodes[j]
+            if (hasEdge(a.id, b.id)) continue
+            const ca = centerOf(a), cb = centerOf(b)
+            const dist = Math.hypot(ca.x - cb.x, ca.y - cb.y)
+            if (dist < threshold) {
+              // 左侧节点作为 source，保持连线方向自然
+              const [src, tgt] = ca.x <= cb.x ? [a, b] : [b, a]
+              newEdges.push({
+                id: `e-auto-${src.id}-${tgt.id}`,
+                source: src.id, target: tgt.id,
+                type: 'smoothstep', animated: false,
+                data: { auto: true },
+                style: { stroke: '#22D3EE', strokeWidth: 1.5 },
+              })
+            }
+          }
+        }
+        if (newEdges.length > 0) {
+          _patchProject(currentProjectId, {
+            rfEdges: [...proj.rfEdges, ...newEdges],
+          })
+        }
+      },
+
+      // ── 灵感调研 AI 生成对话 ────────────────────────────
+      // 把节点加入对话参考区（去重）
+      addChatRef: (node) => {
+        const { currentProjectId, _patchProject, currentProject } = get()
+        const proj = currentProject()
+        const refs = proj.chat?.refs ?? []
+        if (refs.some(r => r.id === node.id)) return
+        const ref = {
+          id: node.id,
+          kind: node.type === 'mindImage' ? 'image' : 'text',
+          label: node.data?.label ?? '节点',
+          imageUrl: node.data?.imageUrl ?? null,
+        }
+        _patchProject(currentProjectId, {
+          chat: { ...proj.chat, refs: [...refs, ref] },
+        })
+      },
+
+      removeChatRef: (id) => {
+        const { currentProjectId, _patchProject, currentProject } = get()
+        const proj = currentProject()
+        _patchProject(currentProjectId, {
+          chat: { ...proj.chat, refs: (proj.chat?.refs ?? []).filter(r => r.id !== id) },
+        })
+      },
+
+      setChatConfig: (patch) => {
+        const { currentProjectId, _patchProject, currentProject } = get()
+        const proj = currentProject()
+        _patchProject(currentProjectId, { chat: { ...proj.chat, ...patch } })
+      },
+
+      // 发送 prompt → 生成图片（占位图 demo）→ 落到画布
+      sendChatPrompt: async (prompt) => {
+        const { currentProjectId, _patchProject, currentProject } = get()
+        const proj = currentProject()
+        const chat = proj.chat
+        const text = (prompt ?? '').trim()
+        if (!text) return
+
+        const userMsgId = `msg-u-${Date.now()}`
+        const aiMsgId = `msg-a-${Date.now()}`
+        const refSummary = chat.refs.map(r => r.label).join('、')
+
+        // 1) 追加用户消息 + AI 占位消息（loading）
+        _patchProject(currentProjectId, {
+          chat: {
+            ...chat,
+            messages: [
+              ...chat.messages,
+              { id: userMsgId, role: 'user', text, refs: chat.refs },
+              { id: aiMsgId, role: 'ai', status: 'loading', text: '正在生成...' },
+            ],
+          },
+        })
+
+        // 2) 模拟生成（占位图）
+        await new Promise(r => setTimeout(r, 1600 + Math.random() * 800))
+
+        // 比例 → 宽高
+        const RATIO_WH = { '1:1': [768, 768], '4:3': [800, 600], '3:4': [600, 800], '16:9': [896, 504], '9:16': [504, 896] }
+        const [w, h] = RATIO_WH[chat.ratio] ?? [768, 768]
+        const promptTag = zhToTag(text)
+        const seed = Math.floor(Math.random() * 100000)
+        const imageUrl = `https://loremflickr.com/${w}/${h}/${promptTag}?lock=${seed}`
+
+        // 3) 更新 AI 消息为完成态
+        const proj2 = get().currentProject()
+        const result = {
+          id: `gen-${Date.now()}`, imageUrl, prompt: text,
+          model: chat.model, ratio: chat.ratio, clarity: chat.clarity,
+        }
+        get()._patchProject(currentProjectId, {
+          chat: {
+            ...proj2.chat,
+            messages: proj2.chat.messages.map(m =>
+              m.id === aiMsgId
+                ? { ...m, status: 'done', text: `已生成「${text}」`, imageUrl, result }
+                : m
+            ),
+          },
+        })
+
+        // 4) 落到画布（思维导图图片节点，带生成参数）
+        const existingGen = proj2.rfNodes.filter(n => n.type === 'mindImage' && n.data?.fromChat).length
+        get().addRFNode({
+          id: result.id,
+          type: 'mindImage',
+          position: { x: 360 + existingGen * 60, y: 120 + existingGen * 60 },
+          data: {
+            imageUrl, label: text.slice(0, 14) || 'AI 生成', seed,
+            fromChat: true, model: chat.model, ratio: chat.ratio, clarity: chat.clarity,
+            refIds: chat.refs.map(r => r.id),
+          },
+        })
+        return result
+      },
+
+      clearChat: () => {
+        const { currentProjectId, _patchProject, currentProject } = get()
+        const proj = currentProject()
+        _patchProject(currentProjectId, {
+          chat: { ...proj.chat, messages: [], refs: [] },
+        })
+      },
+
+      // ── 各步骤画布占位 Demo（首次进入时铺设，避免重复） ──
+      seedStepCanvas: (step) => {
+        const { currentProjectId, _patchProject, currentProject } = get()
+        const proj = currentProject()
+        const prefix = `demo-s${step}-`
+        if (proj.rfNodes.some(n => n.id.startsWith(prefix))) return // 已铺设
+
+        let nodes = []
+        if (step === 3) {
+          // 三视图：正 / 侧 / 背
+          const views = [
+            { label: '正视图 Front', tag: 'robot,character,toy,front' },
+            { label: '侧视图 Side',  tag: 'robot,character,toy,side' },
+            { label: '背视图 Back',  tag: 'robot,character,toy,back' },
+          ]
+          nodes = views.map((v, i) => ({
+            id: `${prefix}${i}`, type: 'assetImage',
+            position: { x: 120 + i * 300, y: 180 },
+            data: {
+              imageUrl: `https://loremflickr.com/300/380/${v.tag}?lock=${3100 + i}`,
+              label: v.label, demoStep: 3, w: 260, h: 320,
+            },
+          }))
+        } else if (step === 4) {
+          // 动作矩阵：9 张不同肢体动作
+          const poses = ['站立', '行走', '奔跑', '跳跃', '挥手', '坐姿', '思考', '欢呼', '指向']
+          nodes = poses.map((label, i) => ({
+            id: `${prefix}${i}`, type: 'assetImage',
+            position: { x: 80 + (i % 3) * 250, y: 60 + Math.floor(i / 3) * 270 },
+            data: {
+              imageUrl: `https://loremflickr.com/240/240/robot,character,pose?lock=${4100 + i}`,
+              label: `动作 · ${label}`, demoStep: 4, w: 210, h: 210,
+            },
+          }))
+        } else if (step === 5) {
+          // 场景融合：中间多张 IP 形象占位，供选中后应用场景
+          const bases = ['形象 A', '形象 B', '形象 C', '形象 D', '形象 E', '形象 F']
+          nodes = bases.map((label, i) => ({
+            id: `${prefix}${i}`, type: 'assetImage',
+            position: { x: 90 + (i % 3) * 250, y: 80 + Math.floor(i / 3) * 270 },
+            data: {
+              imageUrl: `https://loremflickr.com/240/240/character,mascot,3d?lock=${5100 + i}`,
+              label, demoStep: 5, w: 210, h: 210, sceneBase: true,
+            },
+          }))
+        }
+        if (nodes.length > 0) {
+          _patchProject(currentProjectId, { rfNodes: [...proj.rfNodes, ...nodes] })
+        }
+      },
+
+      // 场景融合：把选中形象套用某场景模板，生成新图落到画布
+      generateSceneApplication: async (sourceNode, template) => {
+        const { currentProjectId, currentProject } = get()
+        if (!sourceNode) return
+        set({ isGenerating: true }, false, 'sceneGenStart')
+        await new Promise(r => setTimeout(r, 1500 + Math.random() * 800))
+        const proj = get().currentProject()
+        const existing = proj.rfNodes.filter(n => n.data?.demoStep === 5 && n.data?.sceneApplied).length
+        const seed = Math.floor(Math.random() * 100000)
+        get().addRFNode({
+          id: `demo-s5-scene-${Date.now()}`,
+          type: 'assetImage',
+          position: { x: 860, y: 80 + existing * 240 },
+          data: {
+            imageUrl: `https://loremflickr.com/300/300/${template.tag}?lock=${seed}`,
+            label: `${sourceNode.data?.label ?? '形象'} × ${template.label}`,
+            demoStep: 5, w: 250, h: 250, sceneApplied: true,
+          },
+        })
+        set({ isGenerating: false }, false, 'sceneGenDone')
       },
 
       // ── 框选提炼 ───────────────────────────────────────

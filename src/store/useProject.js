@@ -10,11 +10,12 @@ export default function useProject() {
     ipContext:       proj?.ipContext       ?? {},
     workflowPhase:   proj?.workflowPhase   ?? 'moodboard',
     activeStep:      proj?.activeStep      ?? 0,
-    moodboard:       proj?.moodboard       ?? { searchQuery: '', isSearching: false },
+    moodboard:       proj?.moodboard       ?? { searchQuery: '', isSearching: false, results: [] },
     materialLibrary: proj?.materialLibrary ?? { form: [], cmf: [], motif: [] },
     knowledgeGraph:  proj?.knowledgeGraph  ?? { isExtracting: false, sourceLabel: '', uploadedFiles: [] },
     lockedElements:  proj?.lockedElements  ?? [],
     historyNodes:    proj?.historyNodes    ?? [],
+    chat:            proj?.chat            ?? { refs: [], messages: [], model: 'GLM-5.2', ratio: '1:1', clarity: '标清' },
     rfNodes:         proj?.rfNodes         ?? [],
     rfEdges:         proj?.rfEdges         ?? [],
     // store actions（直接透传）

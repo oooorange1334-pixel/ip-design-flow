@@ -19,13 +19,13 @@ function ColorPalette() {
 
   return (
     <div>
-      <p className="text-[14px] text-neutral-500 mb-1.5">CMF 色板</p>
+      <p className="text-[14px] text-neutral-400 mb-1.5">CMF 色板</p>
       <div className="flex gap-1.5">
         {palette.map((hex, i) => (
           <div key={i} className="flex-1 flex flex-col items-center gap-1">
             <div
-              className="w-full h-6 rounded border border-line cursor-pointer transition-transform hover:scale-110"
-              style={{ background: hex || '#1a1a1f' }}
+              className="w-full h-6 rounded-lg border border-glass-edge cursor-pointer transition-transform hover:scale-110"
+              style={{ background: hex || 'rgba(28,33,46,0.6)' }}
               title={hex || '未设置'}
             />
             <input
@@ -45,26 +45,41 @@ function ColorPalette() {
 
 // ── 参数滑块 ──────────────────────────────────────────────
 function ParamSlider({ label, sublabel, value, onChange, color = 'accent' }) {
-  const trackColors = {
-    accent: 'accent-violet-500',
-    cyan: 'accent-cyan-500',
-    amber: 'accent-amber-500',
-    rose: 'accent-rose-500',
+  // 主色映射（霓虹辉光滑块经 CSS 变量 --c 上色）
+  const COLOR_HEX = {
+    accent: '#7C4DFF',
+    cyan:   '#22D3EE',
+    amber:  '#F59E0B',
+    rose:   '#FB7185',
   }
+  const c = COLOR_HEX[color] ?? COLOR_HEX.accent
+  const v = Number.isFinite(value) ? value : 0   // 兜底，防 undefined 崩溃
+  const fill = `${Math.round(v * 100)}%`
+
   return (
-    <div className="space-y-0.5">
+    <div className="space-y-1">
       <div className="flex justify-between items-baseline">
-        <span className="text-[14px] text-neutral-400">{label}</span>
+        <span className="text-[14px] text-neutral-300">{label}</span>
         <div className="flex items-center gap-1.5">
-          {sublabel && <span className="text-[15px] text-neutral-700">{sublabel}</span>}
-          <span className="text-[14px] font-mono text-neutral-400 w-8 text-right">{value.toFixed(2)}</span>
+          {sublabel && (
+            <span
+              className="text-[14px] px-1.5 py-px rounded-full"
+              style={{ color: c, background: `${c}1a` }}
+            >
+              {sublabel}
+            </span>
+          )}
+          <span className="text-[14px] font-mono w-9 text-right" style={{ color: c }}>
+            {v.toFixed(2)}
+          </span>
         </div>
       </div>
       <input
         type="range" min="0" max="1" step="0.01"
-        value={value}
+        value={v}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className={cn('w-full h-0.5 cursor-pointer', trackColors[color] ?? trackColors.accent)}
+        className="vibe-slider"
+        style={{ '--c': c, '--fill': fill }}
       />
     </div>
   )
@@ -91,18 +106,18 @@ function MaterialGrid() {
 
   return (
     <div>
-      <p className="text-[14px] text-neutral-500 mb-1.5">材质预设</p>
+      <p className="text-[14px] text-neutral-400 mb-1.5">材质预设</p>
       {/* 分组 tab */}
-      <div className="flex gap-0.5 mb-2">
+      <div className="flex gap-1 mb-2 p-0.5 rounded-lg glass-card">
         {MATERIAL_GROUPS.map((g) => (
           <button
             key={g}
             onClick={() => setActiveGroup(g)}
             className={cn(
-              'flex-1 text-[15px] py-0.5 rounded transition-colors',
+              'flex-1 text-[14px] py-1 rounded-md transition-all',
               activeGroup === g
-                ? 'bg-accent/20 text-accent'
-                : 'text-neutral-600 hover:text-neutral-400'
+                ? 'bg-accent text-white shadow-neon-purple-sm'
+                : 'text-neutral-400 hover:text-neutral-200'
             )}
           >
             {g}
@@ -110,22 +125,22 @@ function MaterialGrid() {
         ))}
       </div>
       {/* 材质网格 4列 */}
-      <div className="grid grid-cols-4 gap-1">
+      <div className="grid grid-cols-4 gap-1.5">
         {filtered.map((preset) => (
           <button
             key={preset.id}
             onClick={() => applyPreset(preset)}
             className={cn(
-              'flex flex-col items-center gap-1 p-1.5 rounded border transition-all',
+              'flex flex-col items-center gap-1 p-1.5 rounded-lg transition-all glass-card',
               selectedId === preset.id || ipContext.material === preset.label
-                ? 'border-accent/60 bg-accent/5'
-                : 'border-line hover:border-line bg-canvas-800'
+                ? 'neon-ring'
+                : 'glass-card-hover'
             )}
             title={preset.label}
           >
             {/* 材质色块 */}
             <div
-              className="w-6 h-6 rounded-full border border-line/50 shrink-0"
+              className="w-6 h-6 rounded-full border border-glass-edge shrink-0"
               style={{
                 background: preset.color,
                 boxShadow: preset.metalness > 0.7
@@ -133,7 +148,7 @@ function MaterialGrid() {
                   : 'none',
               }}
             />
-            <span className="text-[14px] text-neutral-500 text-center leading-tight line-clamp-2">
+            <span className="text-[14px] text-neutral-400 text-center leading-tight line-clamp-2">
               {preset.label}
             </span>
           </button>
@@ -161,7 +176,7 @@ function SurfaceTreatmentTags() {
 
   return (
     <div>
-      <p className="text-[14px] text-neutral-500 mb-1.5">表面处理</p>
+      <p className="text-[14px] text-neutral-400 mb-1.5">表面处理</p>
       <div className="flex flex-wrap gap-1">
         {SURFACE_TREATMENTS.map((tag) => {
           const active = selected.includes(tag)
@@ -170,10 +185,10 @@ function SurfaceTreatmentTags() {
               key={tag}
               onClick={() => toggle(tag)}
               className={cn(
-                'flex items-center gap-1 text-[14px] px-2 py-0.5 rounded-full border transition-colors',
+                'flex items-center gap-1 text-[14px] px-2 py-1 rounded-full border transition-all',
                 active
-                  ? 'bg-locked/10 border-locked/40 text-locked'
-                  : 'border-line text-neutral-500 hover:border-neutral-600 hover:text-neutral-400'
+                  ? 'bg-locked/15 border-locked/50 text-locked shadow-[0_0_8px_rgba(245,158,11,0.35)]'
+                  : 'glass-card text-neutral-400 hover:text-neutral-200 glass-card-hover'
               )}
             >
               {active && <Pin size={8} />}
@@ -200,8 +215,8 @@ export default function CMFSelector() {
       <ColorPalette />
 
       {/* 基础参数滑块 */}
-      <div className="space-y-2.5">
-        <p className="text-[14px] text-neutral-500">表面参数</p>
+      <div className="space-y-3">
+        <p className="text-[14px] text-neutral-400">表面参数</p>
         <ParamSlider
           label="粗糙度 Roughness"
           sublabel={ipContext.roughness < 0.2 ? '镜面' : ipContext.roughness > 0.7 ? '哑光' : ''}
@@ -226,7 +241,7 @@ export default function CMFSelector() {
         {/* 高级参数折叠 */}
         <button
           onClick={() => setShowAdvanced(!showAdvanced)}
-          className="flex items-center gap-1 text-[14px] text-neutral-600 hover:text-neutral-400 transition-colors"
+          className="flex items-center gap-1 text-[14px] text-neutral-500 hover:text-accent transition-colors"
         >
           {showAdvanced ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
           高级参数

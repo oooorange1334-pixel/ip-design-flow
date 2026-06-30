@@ -114,16 +114,16 @@ function Topbar() {
   const lockedCount = proj?.lockedElements?.length ?? 0
 
   return (
-    <header className="h-10 flex items-center gap-3 px-3 bg-canvas-900 border-b border-line shrink-0 z-20">
+    <header className="h-11 flex items-center gap-3 px-4 glass-panel border-0 divider-x shrink-0 z-20">
       {/* Logo */}
       <div className="flex items-center gap-2 shrink-0">
-        <div className="w-5 h-5 rounded bg-accent flex items-center justify-center">
+        <div className="w-5 h-5 rounded-md bg-accent flex items-center justify-center shadow-neon-purple-sm">
           <Zap size={10} className="text-white" />
         </div>
-        <span className="text-[14px] font-semibold text-neutral-400 tracking-tight">IP 设计流</span>
+        <span className="text-[14px] font-semibold text-neutral-300 tracking-tight">IP 设计流</span>
       </div>
 
-      <div className="w-px h-4 bg-neutral-800 shrink-0" />
+      <div className="w-px h-4 shrink-0" style={{ background: 'rgba(255,255,255,0.08)' }} />
 
       {/* 项目下拉 */}
       <ProjectDropdown />
@@ -159,11 +159,11 @@ function StepNavContent() {
   const activeStep = currentProject()?.activeStep ?? 0
 
   return (
-    <div className="h-full flex flex-col bg-canvas-900 overflow-hidden">
-      <div className="px-3 pt-3 pb-1 shrink-0">
-        <p className="text-[15px] text-neutral-700 font-mono uppercase tracking-wider px-1 mb-1">工作流</p>
+    <div className="h-full flex flex-col glass-panel border-0 divider-r overflow-hidden">
+      <div className="px-4 pt-4 pb-2 shrink-0">
+        <p className="text-[13px] text-neutral-500 font-mono uppercase tracking-wider px-1">工作流</p>
       </div>
-      <nav className="flex-1 px-2 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 px-2 space-y-1 overflow-y-auto">
         {STEPS.map(step => {
           const active = activeStep === step.id
           return (
@@ -171,15 +171,17 @@ function StepNavContent() {
               key={step.id}
               onClick={() => setActiveStep(step.id)}
               className={cn(
-                'w-full flex items-center gap-2 px-2 py-2 rounded-md text-left transition-all',
-                active ? 'bg-accent/10 text-neutral-100' : 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/60'
+                'w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition-all',
+                active
+                  ? 'glass-card neon-ring text-neutral-100'
+                  : 'text-neutral-500 hover:text-neutral-200 hover:bg-white/[0.04]'
               )}
             >
-              <span className={cn('font-mono text-[14px] w-4 shrink-0 tabular-nums', active ? step.color : 'text-neutral-700')}>
+              <span className={cn('font-mono text-[14px] w-4 shrink-0 tabular-nums', active ? step.color : 'text-neutral-600')}>
                 {step.num}
               </span>
-              <span className="text-[15px] font-medium truncate flex-1">{step.label}</span>
-              {active && <span className="w-1 h-1 rounded-full bg-accent shrink-0" />}
+              <span className="text-[14px] font-medium truncate flex-1">{step.label}</span>
+              {active && <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0 shadow-neon-purple-sm" />}
             </button>
           )
         })}
@@ -220,10 +222,12 @@ function VResizeHandle() {
 
 // ── 主布局 ────────────────────────────────────────────────
 export default function AppShell({ canvas, controlPanel, contextDrawer }) {
-  const { hLayoutSizes, vLayoutSizes, setHLayoutSizes, setVLayoutSizes } = useIPStore()
+  const { hLayoutSizes, setHLayoutSizes } = useIPStore()
+  // 底部控制舱已移除，画布始终占满中部
+  void controlPanel
 
   return (
-    <div className="h-full flex flex-col bg-canvas-950 text-neutral-200 overflow-hidden">
+    <div className="h-full flex flex-col text-neutral-200 overflow-hidden" style={{ background: '#0B0D13' }}>
       <Topbar />
 
       <PanelGroup
@@ -238,25 +242,11 @@ export default function AppShell({ canvas, controlPanel, contextDrawer }) {
 
         <HResizeHandle />
 
-        {/* 中央主工作区 */}
+        {/* 中央主工作区（画布占满） */}
         <Panel defaultSize={hLayoutSizes[1]} minSize={40} style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          <PanelGroup direction="vertical" onLayout={setVLayoutSizes} style={{ flex: 1, minHeight: 0 }}>
-            <Panel
-              defaultSize={vLayoutSizes[0]} minSize={20} maxSize={85}
-              style={{ overflow: 'hidden', position: 'relative' }}
-              className="bg-canvas-950"
-            >
-              {canvas}
-            </Panel>
-            <VResizeHandle />
-            <Panel
-              defaultSize={vLayoutSizes[1]} minSize={15} maxSize={80}
-              style={{ overflow: 'hidden' }}
-              className="bg-canvas-900 border-t border-line"
-            >
-              {controlPanel}
-            </Panel>
-          </PanelGroup>
+          <div className="flex-1 min-h-0 relative" style={{ background: '#0B0D13' }}>
+            {canvas}
+          </div>
         </Panel>
 
         <HResizeHandle />

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { Columns3, Sparkles, ChevronDown } from 'lucide-react'
 import { cn } from '../../../lib/utils'
-import useIPStore from '../../../store/useIPStore'
+import useProject from '../../../store/useProject'
 import CMFSelector from '../../cmf/CMFSelector'
 import { generateTripleViewSet } from '../../../lib/api/mockGenerate'
 
@@ -9,7 +9,7 @@ export default function Step03TripleView() {
   const {
     historyNodes, rfNodes, ipContext, lockedElements,
     isGenerating, setGenerating, addRFNode, updateRFNodeData,
-  } = useIPStore()
+  } = useProject()
 
   const [selectedRef, setSelectedRef] = useState('')
   const [generatingTriple, setGeneratingTriple] = useState(false)
@@ -83,31 +83,29 @@ export default function Step03TripleView() {
       </div>
 
       {/* CMF 材质选择器 */}
-      <div className="border-t border-line pt-3">
-        <p className="text-[14px] text-neutral-500 mb-2 flex items-center gap-1.5">
+      <div className="divider-t pt-4">
+        <p className="text-[14px] text-neutral-400 mb-2 flex items-center gap-1.5">
           <span className="w-1 h-1 rounded-full bg-cyan-500 inline-block" />
           CMF 规范
         </p>
         <CMFSelector />
       </div>
 
-      {/* 生成按钮 */}
+      {/* 生成按钮 — 全局重心 CTA */}
       <button
         onClick={handleGenerate}
         disabled={generatingTriple || refOptions.length === 0}
         className={cn(
-          'w-full flex items-center justify-center gap-2 py-2 rounded-md text-xs font-medium transition-all',
-          generatingTriple || refOptions.length === 0
-            ? 'bg-cyan-500/10 text-cyan-500/40 cursor-not-allowed border border-cyan-800/30'
-            : 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-lg shadow-cyan-900/30 active:scale-[0.98]'
+          'cta-primary w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[14px] font-semibold',
+          (generatingTriple || refOptions.length === 0) && 'opacity-65'
         )}
       >
-        <Columns3 size={12} className={generatingTriple ? 'animate-pulse' : ''} />
+        <Columns3 size={14} className={generatingTriple ? 'animate-pulse' : ''} />
         {generatingTriple ? '生成三视图中...' : '生成正·侧·背三视图'}
       </button>
 
       {generatingTriple && (
-        <p className="text-[14px] text-neutral-600 text-center">
+        <p className="text-[14px] text-neutral-500 text-center">
           三个视角并行渲染中，请稍候...
         </p>
       )}
